@@ -45,3 +45,13 @@ Before completing a change, run a Godot 4.7.2 headless import and a short projec
 - Treasure IDs, boss IDs, and world-event IDs are stable persistence keys. Never rename shipped IDs without migration. Boss definitions set `boss=true` and defeated persistent bosses must not respawn.
 - Save version 2 persists equipment, stats, progression, quests, treasure, bosses, events, and scene/map ID while supplying defaults for version 1 saves.
 
+## Milestone 3 conventions
+
+- Save version 3 adds party, party state, bestiary, discoveries, fast travel, puzzle state, and guild reputation. Continue must remove the title `CanvasLayer` before restoring a world or only higher-layer HUD elements will be visible.
+- `GameState.PARTY_DEFS` owns identity, role, color, and skills. `party_state` owns runtime member stats. `party` is the ordered roster and `recruit()` is idempotent.
+- `CombatMath` is the sole damage-formula source. Physical damage is `max(1, attack - floor(defense × 0.35) + variance)`. Never duplicate formulas in UI/AI; battle feedback must show damage and remaining HP.
+- Bestiary records use stable enemy IDs and seen/defeated counts. Call `discover_enemy()` on encounter and victory.
+- `MapWidget.LOCATIONS` and `_geography()` are map-ID-specific. Compact mode is the live minimap; full mode labels journal markers. Every new destination requires an accurate marker/geography entry.
+- Discovery and travel IDs match `AdventureMap.setup()`. UI emits `travel_requested`; `Main` owns transitions and clears pause state.
+- Permanent puzzles use stable keys in `puzzle_states`. Lumenport has its own city renderer; never represent major cities through the generic settlement renderer.
+
