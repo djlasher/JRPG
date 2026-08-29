@@ -75,6 +75,6 @@ func _enemy_turn():
  locked=false;_refresh("Enemy turn deals %d total damage across the party."%total);commands.get_child(0).grab_focus()
 func _victory():
  var exp=0;var money=0;for e in enemies:exp+=int(e.exp);money+=int(e.crowns)
- var notes=GameState.gain_rewards(exp,money);for e in enemies:GameState.discover_enemy(e.id,true);if EnemyDatabase.ENEMIES[enemy_id].get("boss",false) and enemy_id not in GameState.defeated_bosses:GameState.defeated_bosses.append(enemy_id)
+ var notes=GameState.gain_rewards(exp,money);GameState.gain_job_points(maxi(8,exp/3));for e in enemies:GameState.discover_enemy(e.id,true);if EnemyDatabase.ENEMIES[enemy_id].get("boss",false) and enemy_id not in GameState.defeated_bosses:GameState.defeated_bosses.append(enemy_id)
  _refresh("Victory! %d EXP and %d crowns. %s"%[exp,money," ".join(notes)]);await get_tree().create_timer(1.2,true).timeout;get_tree().paused=false;battle_finished.emit(true,enemy_id);queue_free()
 
