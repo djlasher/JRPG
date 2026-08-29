@@ -8,6 +8,7 @@ var title:="The Lanternvale Reach"
 var size:=Vector2(2600,1900)
 var interactables:Array[Dictionary]=[]
 var exit_locked:=false
+var roam_time:=0.0
 const ENCOUNTERS=[
  ["mossling",Vector2(1050,350)],["briarback",Vector2(650,520)],["briarback",Vector2(450,760)],["gloomwing",Vector2(1500,420)],["river_wisp",Vector2(1870,620)],["roadshade",Vector2(950,980)],["stonejaw",Vector2(1650,1120)],["lantern_moth",Vector2(2100,920)],["glass_fox",Vector2(2250,1450)]]
 const TREASURES=[
@@ -93,7 +94,15 @@ func try_interact():
  var probe=player.position+player.facing*28;var best=999.0;var chosen={}
  for it in interactables:var d=probe.distance_to(it.position);if d<best and d<55:best=d;chosen=it
  if not chosen.is_empty():interaction_requested.emit(chosen.kind,chosen.payload)
-func _physics_process(_delta):
+func _physics_process(delta):
+ roam_time+=delta
+ var moved=false
+ for i in interactables.size():
+  if interactables[i].kind!="battle":continue
+  if not interactables[i].has("roam_origin"):interactables[i].roam_origin=interactables[i].position;interactables[i].roam_phase=float(i)*1.73
+  var origin:Vector2=interactables[i].roam_origin;var phase=float(interactables[i].roam_phase)
+  interactables[i].position=origin+Vector2(sin(roam_time*.75+phase)*24.0,cos(roam_time*.58+phase)*15.0);moved=true
+ if moved:queue_redraw()
  if not exit_locked and player.position.y>size.y-42 and abs(player.position.x-size.x/2)<65:exit_locked=true;player.enabled=false;return_requested.emit()
 func remove_near(kind:String):
  for i in range(interactables.size()-1,-1,-1):if interactables[i].kind==kind and player.position.distance_to(interactables[i].position)<100:interactables.remove_at(i)
@@ -139,3 +148,4 @@ func _draw_space():
  draw_rect(Rect2(Vector2.ZERO,size),Color("070b20"));for x in range(40,int(size.x),110):for y in range(50,int(size.y),95):draw_circle(Vector2(x+(y%43),y),2,Color("dce8ff"));for data in [[Vector2(400,350),Color("58a875"),"VIRIDIA"],[Vector2(1500,350),Color("d27b45"),"CYR EMBER"],[Vector2(1700,1100),Color("a2a8c9"),"ORISON"],[Vector2(900,900),Color("a34d67"),"CINDER GATE"]]:draw_circle(data[0],55,data[1]);draw_circle(data[0]-Vector2(15,12),13,data[1].lightened(.25));draw_string(ThemeDB.fallback_font,data[0]+Vector2(-55,80),data[2],0,130,15,Color.WHITE)
 func _draw_other_world():
  var ground=Color("769d72") if map_id=="verdant_planet" else (Color("b66b43") if map_id=="cinder_planet" else (Color("7d82a7") if map_id=="aether_moon" else Color("6f3646")));draw_rect(Rect2(Vector2.ZERO,size),ground);var water=Color("5cc5b0") if map_id=="verdant_planet" else Color("cf6950");draw_rect(Rect2(0,size.y*.68,size.x,size.y*.18),water);for p in [Vector2(250,300),Vector2(500,350),Vector2(800,280)]:draw_rect(Rect2(p-Vector2(65,45),Vector2(130,90)),Color("d0b17a" if map_id!="hell_city" else "58334b"));draw_colored_polygon(PackedVector2Array([p+Vector2(-75,-45),p+Vector2(0,-95),p+Vector2(75,-45)]),Color("825e68"))
+
