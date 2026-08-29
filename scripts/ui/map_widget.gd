@@ -13,6 +13,11 @@ const LOCATIONS={
  "floodroot_hollow":[[.50,.36,"boss","Mire Hart"],[.18,.24,"chest","Treasure"],[.74,.44,"chest","Treasure"]],
  "town":[[.18,.22,"shop","General"],[.38,.20,"shop","Equipment"],[.74,.22,"inn","Inn"],[.80,.62,"church","Church"],[.72,.42,"guild","Guild"],[.58,.70,"save","Waylight"]],
  "lumenport":[[.18,.25,"market","Market"],[.48,.20,"guild","Grand Guild"],[.78,.27,"temple","Temple"],[.30,.62,"inn","Inn"],[.68,.66,"palace","Beacon Hall"]]
+ ,"space":[[.18,.23,"town","Viridia"],[.68,.23,"town","Cyr Ember"],[.77,.73,"town","Orison"],[.41,.60,"cave","Cinder Gate"],[.52,.40,"enemy","Voidcraft"]],
+ "verdant_planet":[[.21,.35,"shop","Exchange"],[.42,.41,"inn","Rest Grove"],[.68,.33,"guild","Ranger Office"]],
+ "cinder_planet":[[.21,.35,"shop","Caravan"],[.42,.41,"inn","Shade House"],[.68,.33,"guild","Expedition Board"]],
+ "aether_moon":[[.22,.36,"shop","Array Store"],[.46,.43,"inn","Pressure Lodge"],[.73,.35,"guild","Signal Office"]],
+ "hell_city":[[.20,.34,"shop","Ember Exchange"],[.40,.40,"inn","Quiet Furnace"],[.66,.32,"guild","Contract Board"]]
 }
 func setup(id:String,player:Node2D,map_size:Vector2,is_compact:=true):map_id=id;tracked_player=player;world_size=map_size;compact=is_compact
 func _ready():mouse_filter=Control.MOUSE_FILTER_IGNORE;set_process(tracked_player!=null);queue_redraw()
@@ -28,6 +33,8 @@ func _geography(pad:Vector2,inner:Vector2):
  elif map_id=="mosswick":_water(Rect2(.78,0,.22,1),pad,inner);_water(Rect2(.62,.55,.38,.22),pad,inner)
  elif map_id=="town":_water(Rect2(.88,.22,.1,.25),pad,inner)
  elif map_id=="lumenport":_water(Rect2(0,.76,1,.24),pad,inner);_water(Rect2(.45,.30,.10,.46),pad,inner)
+ elif map_id=="space":draw_rect(Rect2(pad,inner),Color("070b20"))
+ elif map_id in ["verdant_planet","cinder_planet","aether_moon","hell_city"]:_water(Rect2(0,.68,1,.18),pad,inner)
  else:draw_rect(Rect2(pad+Vector2(.08,.15)*inner,Vector2(.84,.7)*inner),Color("3d4655"));draw_line(pad+Vector2(.5,.85)*inner,pad+Vector2(.5,.15)*inner,Color("7b7467"),7)
 func _water(r:Rect2,pad:Vector2,inner:Vector2):draw_rect(Rect2(pad+r.position*inner,r.size*inner),Color("3d8dab"))
 func _marker(n:Vector2,kind:String,label:String,pad:Vector2,inner:Vector2):
