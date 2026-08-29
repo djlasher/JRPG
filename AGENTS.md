@@ -91,3 +91,5 @@ Before completing a change, run a Godot 4.7.2 headless import and a short projec
 - Ordinary enemy damage is deliberately forgiving enough to support exploration and testing. Bosses may hit harder, but defend and carried healing must remain meaningful and victories provide modest HP/MP recovery.
 - Battle portraits communicate action: player hits flash the target, enemy attacks lunge, and party damage triggers a brief red overlay. Preserve feedback when adding effects rather than reverting combat to text-only updates.
 - Visible encounters roam gently around stable origins. They do not chase yet, and interaction checks must use their live positions.
+- Pause navigation is hierarchical: B returns from any journal submenu to the Travel Journal root, and B at the root closes it. Menu/Start always closes the entire journal; reopening always reconstructs the root rather than retaining submenu state.
+
