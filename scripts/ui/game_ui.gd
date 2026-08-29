@@ -3,6 +3,7 @@ extends CanvasLayer
 
 signal dialogue_closed
 signal quit_to_title
+signal travel_requested(id:String)
 var panel:PanelContainer
 var title:Label
 var body:RichTextLabel
@@ -37,15 +38,32 @@ func _rest():
  else: body.text="Maeve smiles gently. 'Come back when the road has been kinder.'"
 func pause_menu():
  _base("Travel Journal",Vector2(560,340),Vector2(40,10));mode="pause";get_tree().paused=true;var mins=int(GameState.play_seconds)/60;body.text="[b]%s — Level %d[/b]  HP %d/%d  MP %d/%d\nLocation: %s  Crowns: %d  Journey: %02d:%02d\n%s"%[GameState.HERO_NAME,GameState.level,GameState.hp,GameState.stat("max_hp"),GameState.mp,GameState.stat("max_mp"),GameState.current_location,GameState.crowns,mins,int(GameState.play_seconds)%60,_inventory_text()]
- for option in ["Area Map","Quest Log","Equipment","Return to game","Quit to title"]:
+ for option in ["Area Map","Party","Bestiary","Fast Travel","Quest Log","Equipment","Return to game","Quit to title"]:
   var b=Button.new(); b.text=option; buttons.add_child(b)
- buttons.get_child(0).pressed.connect(area_map);buttons.get_child(1).pressed.connect(quest_log);buttons.get_child(2).pressed.connect(equipment_menu);buttons.get_child(3).pressed.connect(_close);buttons.get_child(4).pressed.connect(func():get_tree().paused=false;clear();quit_to_title.emit());buttons.get_child(0).grab_focus()
+ buttons.get_child(0).pressed.connect(area_map);buttons.get_child(1).pressed.connect(party_menu);buttons.get_child(2).pressed.connect(bestiary_menu);buttons.get_child(3).pressed.connect(fast_travel_menu);buttons.get_child(4).pressed.connect(quest_log);buttons.get_child(5).pressed.connect(equipment_menu);buttons.get_child(6).pressed.connect(_close);buttons.get_child(7).pressed.connect(func():get_tree().paused=false;clear();quit_to_title.emit());buttons.get_child(0).grab_focus()
 func _inventory_text():
  var out=[]; for id in GameState.inventory: out.append("%s ×%d"%[GameState.ITEMS.get(id,{"name":id}).name,GameState.inventory[id]]); return "\n".join(out)
 func area_map():
  _base("Area Map",Vector2(560,340),Vector2(40,10));mode="pause";body.text="Gold: settlements and services   Gray: caves   Blue: water   White: Ari"
  var id=str(GameState.flags.get("map_id","town"));var widget=MapWidget.new();widget.custom_minimum_size=Vector2(500,190);widget.size=Vector2(500,190);widget.setup(id,null,Vector2(2600,1900),false);buttons.add_child(widget)
  var back=Button.new();back.text="Back";back.pressed.connect(pause_menu);buttons.add_child(back);back.grab_focus()
+func party_menu():
+ _base("Party",Vector2(560,340),Vector2(40,10));mode="pause";var rows=[]
+ for id in GameState.party:
+  if id=="ari":rows.append("[b]Ari — Waylight Warden[/b]\nLv.%d  HP %d/%d  MP %d/%d\nLantern Cut · Ember Spark · Waylight Mend"%[GameState.level,GameState.hp,GameState.stat("max_hp"),GameState.mp,GameState.stat("max_mp")])
+  else:var d=GameState.PARTY_DEFS[id];var s=GameState.party_state[id];rows.append("[b]%s — %s[/b]\nLv.%d  HP %d/%d  MP %d/%d\n%s"%[d.name,d.role,s.level,s.hp,s.max_hp,s.mp,s.max_mp," · ".join(d.skills)])
+ body.text="\n\n".join(rows);var back=Button.new();back.text="Back";back.pressed.connect(pause_menu);buttons.add_child(back);back.grab_focus()
+func bestiary_menu():
+ _base("Wayfarers' Bestiary",Vector2(560,340),Vector2(40,10));mode="pause";var rows=[]
+ for id in GameState.bestiary:
+  var e=EnemyDatabase.ENEMIES.get(id,{});var record=GameState.bestiary[id];rows.append("[b]%s[/b] — Seen %d, Defeated %d\n%s creature; reward %d crowns."%[e.get("name",id),record.seen,record.defeated,e.get("ai","unknown"),e.get("crowns",0)])
+ body.text="No creatures recorded." if rows.is_empty() else "\n\n".join(rows);var back=Button.new();back.text="Back";back.pressed.connect(pause_menu);buttons.add_child(back);back.grab_focus()
+func fast_travel_menu():
+ _base("Waylight Travel",Vector2(520,330),Vector2(60,15));mode="pause";body.text="Travel to a discovered Waylight destination."
+ for id in GameState.fast_travel:
+  var b=Button.new();b.text={"town":"Larkspur","brackenford":"Brackenford","mosswick":"Mosswick","lumenport":"Lumenport","sunstep_abbey":"Sunstep Abbey"}.get(id,id.capitalize());b.pressed.connect(_request_travel.bind(id));buttons.add_child(b)
+ var back=Button.new();back.text="Back";back.pressed.connect(pause_menu);buttons.add_child(back);buttons.get_child(0).grab_focus()
+func _request_travel(id:String):travel_requested.emit(id)
 func quest_log():
  _base("Quest Log",Vector2(560,340),Vector2(40,10));mode="pause";var rows=[]
  for id in GameState.quests:
