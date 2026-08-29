@@ -67,3 +67,12 @@ Before completing a change, run a Godot 4.7.2 headless import and a short projec
 - `ShipBattleUI` is distinct from character battle. Ship damage uses `CombatMath`, shields absorb before hull, and hull defeat never overwrites a valid save. Ship state lives in `GameState.ship`.
 - Map hierarchy is surface region → local area, or space → planet/Hell local area. `MapWidget` requires explicit entries for every cross-world ID.
 
+## Milestone 5 architecture
+
+- Save version 5 persists Resonance Marks, activated Advancement Lattice nodes, deterministic generated equipment, and chest-roll IDs. Older saves receive the expanded seven-slot equipment layout without losing equipped legacy gear.
+- `ProgressionDatabase` owns the 120-node lattice, eight spell schools, equipment bases, rarity tiers, affixes, and named legendary pool. Keep generated item identity stable by seeding rolls from persistent chest IDs.
+- Lattice activation must be adjacent to an active node and spend character-specific Resonance Marks. Learned spell IDs are copied into the character's permanent learned list for battle/menu use.
+- Generated gear records contain an instance ID, base ID, rarity, slot, rating, stats, affixes, and description. Equipment comparisons must use `GameState.item_data()` so legacy and generated gear share one path.
+- Equipment slots are Weapon, Head, Body, Hands, Feet, Accessory1, and Accessory2. Avoid reintroducing generic Armor/Accessory slots except in backward migrations.
+- Treasure remains deterministic and persistent: a shipped chest ID may never silently change its seed or reward identity.
+
