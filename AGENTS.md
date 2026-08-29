@@ -55,3 +55,15 @@ Before completing a change, run a Godot 4.7.2 headless import and a short projec
 - Discovery and travel IDs match `AdventureMap.setup()`. UI emits `travel_requested`; `Main` owns transitions and clears pause state.
 - Permanent puzzles use stable keys in `puzzle_states`. Lumenport has its own city renderer; never represent major cities through the generic settlement renderer.
 
+## Milestone 4 architecture
+
+- Save version 4 persists jobs, job levels/JP, learned/cross-job skills, relationships/events/romance, story branches, vehicles, ship state/upgrades, and known planets. Migrations from versions 1–3 remain mandatory.
+- `GameState.JOBS` is the job database. Character level never changes during `change_job()`. `job_state[character]` owns current job, per-job levels/JP, permanently learned skills, and limited equipped inheritance slots. Character baseline × job modifier + equipment is the stat order.
+- Job points are awarded independently after battle by `gain_job_points()`. Jobs cap at level 10. Advanced/secret jobs carry clues and must enter `unlocked_jobs` only through authored conditions.
+- Relationship keys are canonical `left:right` pairs. Every romance-capable record must explicitly set `adult=true`. Early bond events change points; only an explicit commitment action sets `romance=true`. Event IDs prevent replay.
+- Major story branches live in `story_branches`, never incidental dialogue flags. Branch choices may reconverge but consequences must read the explicit branch value.
+- `vehicles` owns unlocks/current mode. Road, boat, aircraft, and spacecraft are recognizable `Player.appearance_mode` silhouettes. Vehicle collision continues to use map collision; future terrain masks should specialize it rather than bypassing collision.
+- `AdventureMap` is also the cross-world router. `space` is a manually piloted map; planet/Hell IDs are local surfaces and return through `return_space`. Do not process off-world maps when they are not current.
+- `ShipBattleUI` is distinct from character battle. Ship damage uses `CombatMath`, shields absorb before hull, and hull defeat never overwrites a valid save. Ship state lives in `GameState.ship`.
+- Map hierarchy is surface region → local area, or space → planet/Hell local area. `MapWidget` requires explicit entries for every cross-world ID.
+
