@@ -59,6 +59,10 @@ func _interaction(kind:String,payload:Dictionary):
  elif kind=="guild": ui.guild_board(payload.town)
  elif kind=="recruit":GameState.recruit(payload.id);ui.feedback(payload.text+"\n\n%s joined the party."%GameState.PARTY_DEFS[payload.id].name)
  elif kind=="puzzle":GameState.puzzle_states[payload.id]=true;ui.feedback(payload.text)
+ elif kind=="unlock_vehicle":_unlock_vehicle(payload)
+ elif kind=="ship_battle":_start_ship_battle()
+ elif kind=="return_space":_enter_adventure("space")
+ elif kind=="branch":_story_choice()
  if kind!="door": ui.dialogue_closed.connect(_unlock,CONNECT_ONE_SHOT)
 func _unlock(): if world: world.player.enabled=true
 func _transition_to_interior():
@@ -77,6 +81,17 @@ func _fast_travel(id:String):
  get_tree().paused=false;ui.clear()
  if id=="town":_enter_town_from_region()
  else:_enter_adventure(id)
+func _unlock_vehicle(payload:Dictionary):
+ GameState.vehicles[payload.id]=true;GameState.vehicles.current=payload.id
+ if payload.id=="spacecraft" and "space" not in GameState.fast_travel:GameState.fast_travel.append("space")
+ ui.feedback(payload.text+"\n\n%s travel is now available."%payload.id.capitalize());ui.dialogue_closed.connect(_unlock,CONNECT_ONE_SHOT)
+func _start_ship_battle():
+ world.player.enabled=false;var battle=ShipBattleUI.new();add_child(battle);battle.finished.connect(func(_victory):if world:world.player.enabled=true)
+func _story_choice():
+ ui._base("Viridian Accord",Vector2(520,280),Vector2(60,40));ui.mode="menu";ui.body.text="The garden council asks who should safeguard the star-road beacon. This choice changes future support."
+ for choice in ["Entrust the local Gardeners","Ask the Wayfarers' Guild to share custody"]:var b=Button.new();b.text=choice;ui.buttons.add_child(b)
+ ui.buttons.get_child(0).pressed.connect(_set_branch.bind("garden_alliance"));ui.buttons.get_child(1).pressed.connect(_set_branch.bind("guild_alliance"));ui.buttons.get_child(0).grab_focus()
+func _set_branch(value:String):GameState.story_branches.first_contact=value;GameState.adjust_relationship("ari:lyra",8 if value=="garden_alliance" else 3);ui.feedback("The accord is recorded. Its consequences will follow the Waylight Comet.");ui.dialogue_closed.connect(_unlock,CONNECT_ONE_SHOT)
 func _adventure_auto_return():
  if previous_map_id=="region":_enter_town_from_region()
  else:_enter_adventure("region")
