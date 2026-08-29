@@ -60,3 +60,9 @@ See `docs/day_2_report.md` for the content inventory, validation notes, and reco
 
 See `docs/day_3_report.md` for stabilization details and the current chapter limitations.
 
+## Beyond the world
+
+Milestone 4 foundations add separate character/job progression, eight foundational and five advanced/secret vocations, persistent adult relationship/romance choices, an explicit story branch, progressive ground/boat/air/space vehicles, controllable space travel, turn-based ship combat, Viridia, Cyr Ember, Orison Moon, and the peaceful demon city of Cinder Court. Save format 4 retains these systems across Continue.
+
+See `docs/day_4_report.md` for the implementation boundary and playtest route.
+
