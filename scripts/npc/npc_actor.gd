@@ -24,4 +24,5 @@ func _physics_process(delta):
  var target=route[route_index]; if global_position.distance_to(target)<5: route_index=(route_index+1)%route.size(); wait_time=1.0+fmod(global_position.x,1.5); return
  velocity=global_position.direction_to(target)*move_speed;facing=velocity.normalized();move_and_slide();queue_redraw()
 func _draw():
- draw_circle(Vector2(0,15),9,Color(0,0,0,0.2));draw_texture_rect_region(PixelAssets.ATLAS,Rect2(-16,-25,32,46),PixelAssets.npc_region(npc_name,facing))
+ draw_circle(Vector2(0,15),9,Color(0,0,0,0.2));draw_rect(Rect2(-8,-3,16,20),color);draw_circle(Vector2(0,-7),7,Color("e5b98f"));draw_polygon(PackedVector2Array([Vector2(-8,-10),Vector2(0,-16),Vector2(8,-10)]),PackedColorArray([color.darkened(.35)]))
+
