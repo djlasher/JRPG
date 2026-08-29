@@ -7,9 +7,17 @@ var player:Player
 var building_id:String
 var building_name:String
 var merchant:NPCActor
+var exit_in_progress:=false
 const RESIDENTS={"home1":["Mira","I leave a lamp in the window for travelers. A small light can make a strange town kinder."],"home2":["Tomas","Those flowers outside? My mother planted the first patch after the great rain."],"home3":["Edda","The kettle sings louder when storms come down from the glass hills."],"home4":["Caro","Bluebell Cottage was blue once. The rain has opinions about paint."],"home5":["Rusk","Captain Brann walks the gate route even on his day off. Habit is its own uniform."]}
 func setup(id:String,title:String): building_id=id; building_name=title
 func _ready(): queue_redraw(); _walls(); player=Player.new(); add_child(player); player.position=Vector2(320,300); _spawn_host()
+func _physics_process(_delta):
+ # Crossing the open bottom doorway leaves automatically. Interaction remains
+ # reserved for people and objects, matching classic top-down RPG expectations.
+ if not exit_in_progress and player and player.position.y>318 and abs(player.position.x-320)<55:
+  exit_in_progress=true
+  player.enabled=false
+  exit_requested.emit()
 func _walls():
  for r in [Rect2(0,0,640,32),Rect2(0,0,32,360),Rect2(608,0,32,360),Rect2(0,328,270,32),Rect2(370,328,270,32),Rect2(80,95,480,30)]:
   var body=StaticBody2D.new(); var c=CollisionShape2D.new(); var s=RectangleShape2D.new(); s.size=r.size;c.shape=s;c.position=r.position+r.size/2;body.add_child(c);add_child(body)
@@ -29,9 +37,9 @@ func try_interact():
   elif building_id=="inn": interaction_requested.emit("inn",{"actor":merchant})
   else: interaction_requested.emit("npc",{"name":merchant.npc_name,"lines":merchant.lines,"actor":merchant})
  elif building_id=="church" and probe.distance_to(Vector2(320,65))<55: interaction_requested.emit("landmark",{"name":"Guiding Altar","lines":["A blue flame rests above the brass lantern, steady and warm."]})
- elif player.position.y>290 and abs(player.position.x-320)<70: exit_requested.emit()
 func _draw():
  draw_rect(Rect2(0,0,640,360),Color("2d2635")); draw_rect(Rect2(32,32,576,296),Color("c7a878")); draw_rect(Rect2(50,55,540,50),Color("6d4b3a")); draw_rect(Rect2(280,80,80,45),Color("51392f")); draw_rect(Rect2(270,305,100,23),Color("846244")); draw_string(ThemeDB.fallback_font,Vector2(30,24),building_name,HORIZONTAL_ALIGNMENT_LEFT,500,18,Color("f7e5b8"))
  for x in range(80,560,95): draw_rect(Rect2(x,180,55,35),Color("795b43")); draw_rect(Rect2(x+8,187,39,7),Color("d0aa68"))
  if building_id=="inn": for x in [100,220,420,520]: draw_rect(Rect2(x-30,240,60,35),Color("6a86a1"))
  if building_id=="church": for y in [175,225,275]: draw_rect(Rect2(110,y,160,17),Color("745237")); draw_rect(Rect2(370,y,160,17),Color("745237")); draw_circle(Vector2(320,65),14,Color("79dce0"))
+
