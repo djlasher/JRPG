@@ -19,6 +19,8 @@ textures/canvas_textures/default_texture_filter=0
 renderer/rendering_method="gl_compatibility"
 
 [input]
+ui_accept={"deadzone":0.2,"events":[Object(InputEventKey,"physical_keycode":4194309),Object(InputEventKey,"physical_keycode":32),Object(InputEventJoypadButton,"button_index":0)]}
+ui_cancel={"deadzone":0.2,"events":[Object(InputEventKey,"physical_keycode":4194305),Object(InputEventJoypadButton,"button_index":1)]}
 move_left={"deadzone":0.3,"events":[Object(InputEventKey,"physical_keycode":65),Object(InputEventKey,"physical_keycode":4194311),Object(InputEventJoypadMotion,"axis":0,"axis_value":-1.0),Object(InputEventJoypadButton,"button_index":13)]}
 move_right={"deadzone":0.3,"events":[Object(InputEventKey,"physical_keycode":68),Object(InputEventKey,"physical_keycode":4194313),Object(InputEventJoypadMotion,"axis":0,"axis_value":1.0),Object(InputEventJoypadButton,"button_index":14)]}
 move_up={"deadzone":0.3,"events":[Object(InputEventKey,"physical_keycode":87),Object(InputEventKey,"physical_keycode":4194320),Object(InputEventJoypadMotion,"axis":1,"axis_value":-1.0),Object(InputEventJoypadButton,"button_index":11)]}
