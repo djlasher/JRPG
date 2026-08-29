@@ -29,12 +29,14 @@ func _host_info():
  if building_id=="inn": return ["Maeve",["The Resting Heron has hot bread, clean sheets, and no questions before breakfast."],"a35763"]
  if building_id=="church": return ["Sister Alia",["May the Guiding Flame keep your road visible, Ari.","We do not ask the flame for answers—only enough light to choose honestly."],"7c6f9a"]
  if building_id=="library": return ["Archivist Vale",["Every map is a promise that the world can be understood. Most are charming liars."],"567263"]
+ if building_id=="guild": return ["Guildmaster Sen",["The south road is open again. Take a posting, keep your lamp trimmed, and return in one piece."],"477b77"]
  var r=RESIDENTS.get(building_id,["Resident","Welcome. Mind the good rug."]); return [r[0],[r[1]],"7b6b55"]
 func try_interact():
  var probe=player.position+player.facing*28
  if probe.distance_to(merchant.position)<42:
   if building_id in ["general","equipment"]: interaction_requested.emit("shop",{"id":building_id,"name":building_name,"actor":merchant})
   elif building_id=="inn": interaction_requested.emit("inn",{"actor":merchant})
+  elif building_id=="guild": interaction_requested.emit("guild",{"town":"larkspur"})
   else: interaction_requested.emit("npc",{"name":merchant.npc_name,"lines":merchant.lines,"actor":merchant})
  elif building_id=="church" and probe.distance_to(Vector2(320,65))<55: interaction_requested.emit("landmark",{"name":"Guiding Altar","lines":["A blue flame rests above the brass lantern, steady and warm."]})
 func _draw():
