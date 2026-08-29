@@ -36,9 +36,34 @@ var experience:=0
 var hp:=85
 var mp:=22
 var base_stats:Dictionary={"max_hp":85,"max_mp":22,"attack":12,"defense":8,"magic":10,"resistance":7,"speed":10}
+const PARTY_DEFS={
+ "ari":{"name":"Ari","role":"Waylight Warden","color":"315b8a","skills":["lantern_cut","ember_spark","waylight_mend"]},
+ "brann":{"name":"Brann","role":"Shield Captain","color":"496b78","skills":["shield_bash","hold_fast"]},
+ "lyra":{"name":"Lyra Vale","role":"Tide Scholar","color":"785b9b","skills":["rillflare","tide_mend"]}}
+var party:Array[String]=["ari"]
+var party_state:Dictionary={"ari":{"level":1,"hp":85,"mp":22,"max_hp":85,"max_mp":22,"attack":16,"defense":11,"magic":10,"speed":10}}
+var bestiary:Dictionary={}
+var discovered_locations:Array[String]=["town"]
+var fast_travel:Array[String]=["town"]
+var puzzle_states:Dictionary={}
+var guild_reputation:=0
 func _process(delta):play_seconds+=delta
 func reset():
- crowns=140;inventory={"sunleaf_tonic":2,"clearwater_salt":1,"reed_sword":1,"wayfarer_vest":1};equipment={"Weapon":"reed_sword","Armor":"wayfarer_vest","Accessory":""};current_location="Larkspur";player_position=Vector2(730,850);play_seconds=0;flags={};quests={};opened_treasures=[];defeated_bosses=[];world_events=[];level=1;experience=0;base_stats={"max_hp":85,"max_mp":22,"attack":12,"defense":8,"magic":10,"resistance":7,"speed":10};hp=85;mp=22;state_changed.emit()
+ crowns=140;inventory={"sunleaf_tonic":2,"clearwater_salt":1,"reed_sword":1,"wayfarer_vest":1};equipment={"Weapon":"reed_sword","Armor":"wayfarer_vest","Accessory":""};current_location="Larkspur";player_position=Vector2(730,850);play_seconds=0;flags={};quests={};opened_treasures=[];defeated_bosses=[];world_events=[];level=1;experience=0;base_stats={"max_hp":85,"max_mp":22,"attack":12,"defense":8,"magic":10,"resistance":7,"speed":10};hp=85;mp=22;party=["ari"];party_state={"ari":{"level":1,"hp":85,"mp":22,"max_hp":85,"max_mp":22,"attack":16,"defense":11,"magic":10,"speed":10}};bestiary={};discovered_locations=["town"];fast_travel=["town"];puzzle_states={};guild_reputation=0;state_changed.emit()
+func recruit(id:String):
+ if id not in PARTY_DEFS or id in party:return
+ party.append(id)
+ if id=="brann":party_state[id]={"level":maxi(2,level),"hp":120,"mp":12,"max_hp":120,"max_mp":12,"attack":15,"defense":18,"magic":6,"speed":7}
+ else:party_state[id]={"level":maxi(2,level),"hp":72,"mp":42,"max_hp":72,"max_mp":42,"attack":8,"defense":8,"magic":20,"speed":13}
+ state_changed.emit()
+func discover_enemy(id:String,defeated:=false):
+ var record=bestiary.get(id,{"seen":0,"defeated":0})
+ record.seen+=1
+ if defeated:record.defeated+=1
+ bestiary[id]=record
+func discover_location(id:String):
+ if id not in discovered_locations:discovered_locations.append(id)
+ if id not in fast_travel:fast_travel.append(id)
 func stat(key:String)->int:
  var value=int(base_stats.get(key,0))
  for id in equipment.values():
@@ -71,7 +96,7 @@ func gain_rewards(exp:int,money:int)->Array[String]:
  while experience>=level*60:
   experience-=level*60;level+=1;base_stats.max_hp+=12;base_stats.max_mp+=4;base_stats.attack+=3;base_stats.defense+=2;base_stats.magic+=2;base_stats.resistance+=2;base_stats.speed+=1;hp=stat("max_hp");mp=stat("max_mp");notes.append("Ari reached level %d!"%level)
  state_changed.emit();return notes
-func serialize()->Dictionary:return {"version":2,"hero":HERO_NAME,"crowns":crowns,"inventory":inventory,"equipment":equipment,"location":current_location,"position":[player_position.x,player_position.y],"play_seconds":play_seconds,"flags":flags,"quests":quests,"opened_treasures":opened_treasures,"defeated_bosses":defeated_bosses,"world_events":world_events,"level":level,"experience":experience,"hp":hp,"mp":mp,"base_stats":base_stats}
+func serialize()->Dictionary:return {"version":3,"hero":HERO_NAME,"crowns":crowns,"inventory":inventory,"equipment":equipment,"location":current_location,"position":[player_position.x,player_position.y],"play_seconds":play_seconds,"flags":flags,"quests":quests,"opened_treasures":opened_treasures,"defeated_bosses":defeated_bosses,"world_events":world_events,"level":level,"experience":experience,"hp":hp,"mp":mp,"base_stats":base_stats,"party":party,"party_state":party_state,"bestiary":bestiary,"discovered_locations":discovered_locations,"fast_travel":fast_travel,"puzzle_states":puzzle_states,"guild_reputation":guild_reputation}
 func restore(d:Dictionary):
  crowns=int(d.get("crowns",140))
  inventory=d.get("inventory",{})
@@ -94,5 +119,15 @@ func restore(d:Dictionary):
  for key in saved_stats:base_stats[key]=int(saved_stats[key])
  hp=int(d.get("hp",stat("max_hp")))
  mp=int(d.get("mp",stat("max_mp")))
+ party.clear()
+ for member_id in d.get("party",["ari"]):party.append(str(member_id))
+ party_state=d.get("party_state",{"ari":{"level":level,"hp":hp,"mp":mp,"max_hp":stat("max_hp"),"max_mp":stat("max_mp"),"attack":stat("attack"),"defense":stat("defense"),"magic":stat("magic"),"speed":stat("speed")}})
+ bestiary=d.get("bestiary",{})
+ discovered_locations.clear()
+ for discovered_id in d.get("discovered_locations",["town"]):discovered_locations.append(str(discovered_id))
+ fast_travel.clear()
+ for travel_id in d.get("fast_travel",["town"]):fast_travel.append(str(travel_id))
+ puzzle_states=d.get("puzzle_states",{})
+ guild_reputation=int(d.get("guild_reputation",0))
  state_changed.emit()
 
