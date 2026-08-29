@@ -50,5 +50,21 @@ func _leave_interior():
  await _fade_to(1);world.queue_free();GameState.player_position=Vector2(current_building.get("door",Vector2(750,850)));_enter_town();var b=Town.BUILDINGS.filter(func(x):return x.id==current_building.id)[0];world.player.position=b.door+Vector2(0,35);await _fade_to(0)
 func _fade_to(alpha:float): var tw=create_tween();tw.tween_property(fade,"modulate:a",alpha,.25);await tw.finished
 func _save_prompt():
- ui._base("Waylight",Vector2(500,220),Vector2(70,80));ui.mode="menu";ui.body.text="The waylight remembers where travelers have been. Record your journey?";for text in ["Save journey","Not now"]:var b=Button.new();b.text=text;ui.buttons.add_child(b);ui.buttons.get_child(0).pressed.connect(_do_save);ui.buttons.get_child(1).pressed.connect(ui._close);ui.buttons.get_child(0).grab_focus()
-func _do_save(): ui.body.text="Your journey is held safely in the waylight." if SaveManager.save_game() else SaveManager.last_error;for c in ui.buttons.get_children():c.queue_free()
+ ui._base("Waylight",Vector2(500,220),Vector2(70,80))
+ ui.mode="menu"
+ ui.body.text="The waylight remembers where travelers have been. Record your journey?"
+ var save_button=Button.new()
+ save_button.text="Save journey"
+ ui.buttons.add_child(save_button)
+ var cancel_button=Button.new()
+ cancel_button.text="Not now"
+ ui.buttons.add_child(cancel_button)
+ save_button.pressed.connect(_do_save)
+ cancel_button.pressed.connect(ui._close)
+ save_button.grab_focus()
+func _do_save():
+ var saved=SaveManager.save_game()
+ ui.body.text="Your journey is held safely in the waylight." if saved else "The waylight could not record your journey: %s"%SaveManager.last_error
+ for child in ui.buttons.get_children():
+  child.queue_free()
+
