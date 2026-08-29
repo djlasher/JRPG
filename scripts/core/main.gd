@@ -26,6 +26,14 @@ func _process(_delta):
  if not world or ui.panel: return
  if Input.is_action_just_pressed("interact"): world.try_interact()
  if Input.is_action_just_pressed("pause"): world.player.enabled=false;ui.pause_menu();ui.dialogue_closed.connect(_unlock,CONNECT_ONE_SHOT)
+func _unhandled_input(event):
+ # Godot Buttons normally consume ui_accept. This fallback also honors the
+ # project's explicit confirm action for controllers with unusual mappings.
+ if title_layer and event.is_action_pressed("confirm"):
+  var focused=get_viewport().gui_get_focus_owner()
+  if focused is Button and not focused.disabled:
+   focused.pressed.emit()
+   get_viewport().set_input_as_handled()
 func _interaction(kind:String,payload:Dictionary):
  world.player.enabled=false
  if kind=="npc" or kind=="landmark": ui.dialogue(payload.get("name",""),payload.get("lines",[]),payload.get("actor"))
