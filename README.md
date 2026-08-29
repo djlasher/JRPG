@@ -1,55 +1,53 @@
 # Lanterns of Larkspur
 
-An original controller-first 2D top-down JRPG vertical slice. Ari arrives in Larkspur, a river town whose old waylights guide travelers through the valley fog. This milestone contains exploration and town life—no combat.
+An original controller-first 2D top-down JRPG adventure. Ari leaves the river town of Larkspur for the broad Lanternvale Reach: settlements, caves, guild work, persistent treasure, visible monsters, and classic turn-based battles.
 
-## Requirements and launch
+## Launch and controls
 
-Use **Godot 4.7.2 stable**. Open `project.godot` and press F6/F5 (Run Project). The configured main scene is `scenes/main.tscn`; no plugins, downloads, or runtime network access are required.
-
-## Controls
+Use **Godot 4.7.2 stable**. Open `project.godot` and Run Project. No plugins, downloads, paid assets, or runtime network access are required.
 
 | Action | Xbox controller | Keyboard |
 |---|---|---|
-| Move / menu | Left stick or D-pad | WASD or arrows |
-| Interact / confirm | A | E, Space, or Enter |
+| Move / navigate | Left stick or D-pad | WASD or arrows |
+| Interact / confirm | A | E, Space, Enter |
 | Cancel | B | Escape |
-| Travel journal / pause | Menu | Escape |
+| Travel journal | Menu | Escape |
+| Battle choice | D-pad and A/B | Arrows and Enter/Escape |
 
-## Current slice
+## Current adventure
 
-- Title screen with New Game, save-aware Continue, and Quit
-- Large camera-bounded town with market, square, fountain, church quarter, nature, south gate, and distinctive waylight save point
-- Ten enterable locations: two shops, inn, church, archive, and five furnished homes
-- Nineteen named residents across exterior and interiors; six follow looping waypoint routes and pause naturally
-- Multi-page dialogue, reusable facing interaction, controller focus, and pause/status/inventory journal
-- Functional general and equipment shops, persistent currency and inventory, and fee-based inn rest
-- Versioned JSON save/load of location, position, currency, inventory, flags, and play time
-- Collision on map boundaries, buildings, water, trees, counters, walls, and furniture
-- Fade-based reusable exterior/interior transitions and a guarded not-yet-available town exit
+- Complete original Larkspur town with eleven enterable buildings, including its new Wayfarers' Guild
+- 2600×1900 Lanternvale Reach with roads, river boundaries, woodland, rocky uplands, landmarks, hidden branches, and deterministic discoveries
+- Brackenford and Mosswick settlements, each with outfitter, inn, Waylight, and guild board
+- Echoing Grotto, Stillpick Mine, and optional Floodroot Hollow dungeon maps
+- Eleven original enemy types, visible encounters, mixed formations, rare Glass Fox, and two persistent bosses
+- Turn combat with Attack, Skill, Item, Defend, and Flee; HP/MP, EXP, levels, rewards, defeat behavior, and boss restrictions
+- Twelve data-driven main, side, and guild quests with persistent objective progress and controller quest log
+- Functional Weapon, Armor, and Accessory equipment with calculated stat modifiers
+- Persistent regional/dungeon treasure and ten authored world discoveries
 
-## Layout and architecture
+## Architecture
 
-- `scenes/` – project entry scenes
-- `scripts/core/` – game flow, durable state, and saving
-- `scripts/characters/` – player controller
-- `scripts/npc/` – reusable NPC actor and waypoint motion
-- `scripts/world/` – town and parameterized interior maps
-- `scripts/ui/` – dialogue, shop, inn, and journal presentation
-- `docs/` – implementation and test report
+- `scripts/core/` — flow, versioned game state, saving
+- `scripts/world/` — original town/interiors and parameterized adventure destinations
+- `scripts/combat/` — enemy definitions/formations and battle presentation/turns
+- `scripts/ui/` — dialogue, shops, inn, equipment, quest log, guild boards, journal
+- `scripts/characters/`, `scripts/npc/` — reusable exploration actors
+- `docs/` — milestone reports and playtest routes
 
-`GameState` is the authoritative inventory/currency/location model. `SaveManager` serializes it to `user://larkspur_save.json`. Maps expose a small interaction signal contract; `Main` owns transitions and UI routing. Content definitions remain independent of player movement.
+`GameState` is authoritative for inventory, equipment, stats, quests, progression, and persistent world state. `EnemyDatabase` defines combat content, `BattleUI` runs turns, and `AdventureMap` creates the region and destination maps. All maps retain the common interaction signal contract; `Main` owns transitions and routing.
 
 ## Save behavior
 
-Interact with the glowing Waylight east of the fountain, choose Save, then return to the title screen. Continue is enabled only when a save exists. Missing or malformed saves are rejected without crashing. Save version 1 is intentionally explicit for future migrations.
+Waylights write versioned JSON to `user://larkspur_save.json`. Version 2 records map/position, currency, inventory, HP/MP, level/EXP, equipment, quests, treasures, bosses, and events. Version 1 town saves receive safe defaults. Missing or malformed saves fail gracefully.
 
 ## Known limitations
 
-- The milestone has no combat by design.
-- Purchased items are view-only until a future item-use system is requested.
-- Audio is intentionally silent rather than shipping low-quality generated music.
-- Runtime validation in the authoring environment used Godot 4.6.3 because 4.7.2 was unavailable; final editor playthrough should use 4.7.2.
+- Ari is the only playable party member, though battles use formation/combatant arrays.
+- The Skills command currently executes the starter Lantern Cut directly rather than opening a larger skill submenu.
+- Settlements and dungeons share a parameterized renderer rather than bespoke scene files.
+- Audio remains intentionally silent.
+- Authoring validation used Godot 4.6.3 because 4.7.2 was unavailable locally.
 
-## Suggested next milestones
+See `docs/day_2_report.md` for the content inventory, validation notes, and recommended playtest route.
 
-Add a second outdoor map, richer directional animation and repository sprites, item-use hooks, dialogue conditions/flags, audio buses with original music, and accessibility options. Add combat only as a separate explicitly authorized milestone.
