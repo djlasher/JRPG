@@ -7,7 +7,7 @@ var title_layer:CanvasLayer
 var current_building:Dictionary={}
 var previous_map_id:="region"
 
-func _ready(): ui=GameUI.new();add_child(ui);ui.quit_to_title.connect(show_title); _make_fade(); show_title()
+func _ready():ui=GameUI.new();add_child(ui);ui.quit_to_title.connect(show_title);ui.travel_requested.connect(_fast_travel);_make_fade();show_title()
 func _make_fade(): fade=ColorRect.new();fade.color=Color.BLACK;fade.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT);fade.mouse_filter=Control.MOUSE_FILTER_IGNORE;fade.modulate.a=0;var c=CanvasLayer.new();c.layer=100;add_child(c);c.add_child(fade)
 func show_title():
  if world: world.queue_free(); world=null
@@ -57,6 +57,8 @@ func _interaction(kind:String,payload:Dictionary):
  elif kind=="treasure": _open_treasure(payload)
  elif kind=="event": _world_event(payload)
  elif kind=="guild": ui.guild_board(payload.town)
+ elif kind=="recruit":GameState.recruit(payload.id);ui.feedback(payload.text+"\n\n%s joined the party."%GameState.PARTY_DEFS[payload.id].name)
+ elif kind=="puzzle":GameState.puzzle_states[payload.id]=true;ui.feedback(payload.text)
  if kind!="door": ui.dialogue_closed.connect(_unlock,CONNECT_ONE_SHOT)
 func _unlock(): if world: world.player.enabled=true
 func _transition_to_interior():
@@ -65,11 +67,16 @@ func _leave_interior():
  await _fade_to(1);world.queue_free();GameState.player_position=Vector2(current_building.get("door",Vector2(750,850)));_enter_town();var b=Town.BUILDINGS.filter(func(x):return x.id==current_building.id)[0];world.player.position=b.door+Vector2(0,35);await _fade_to(0)
 func _enter_adventure(id:String,restore_position:=false):
  await _fade_to(1)
+ if title_layer:title_layer.queue_free();title_layer=null
  if world:world.queue_free()
  var map=AdventureMap.new();map.setup(id);add_child(map);world=map;map.interaction_requested.connect(_interaction);map.return_requested.connect(_adventure_auto_return)
  if restore_position:map.player.position=GameState.player_position
  var cam=Camera2D.new();map.player.add_child(cam);cam.limit_left=0;cam.limit_top=0;cam.limit_right=int(map.size.x);cam.limit_bottom=int(map.size.y);cam.position_smoothing_enabled=true;cam.position_smoothing_speed=7
- previous_map_id=id;GameState.current_location=map.title;GameState.flags.map_id=id;GameState.player_position=map.player.position;await _fade_to(0)
+ previous_map_id=id;GameState.current_location=map.title;GameState.flags.map_id=id;GameState.discover_location(id);GameState.player_position=map.player.position;await _fade_to(0)
+func _fast_travel(id:String):
+ get_tree().paused=false;ui.clear()
+ if id=="town":_enter_town_from_region()
+ else:_enter_adventure(id)
 func _adventure_auto_return():
  if previous_map_id=="region":_enter_town_from_region()
  else:_enter_adventure("region")
