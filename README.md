@@ -75,3 +75,6 @@ See `docs/day_5_report.md` for the system inventory, validation record, and rema
 ## Dark-fantasy visual pass
 
 A generated transparent atlas now replaces primitive placeholders for visible exploration enemies, battle portraits, treasure chests, spell entries, and equipment rows. Enemy gameplay IDs remain unchanged so quests, formations, bestiary progress, and existing saves continue to work. See `docs/asset_gap_report.md` for the next-sheet inventory and ready-to-paste generation briefs.
+
+Combat now uses separate controller-selectable Skills, Magic, and Items lists. Enemy damage is tuned for a forgiving exploration baseline, Defend provides strong mitigation, victories restore some HP/MP, portraits flash/lunge during attacks, and a red screen pulse communicates party damage. Field monsters drift naturally around their encounter positions rather than remaining static.
+
