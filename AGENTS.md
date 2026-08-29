@@ -1,6 +1,6 @@
 # Persistent engineering instructions
 
-This repository is **Lanterns of Larkspur**, a Godot 4.7.2 top-down JRPG written only in GDScript. Combat is outside the current product scope: never add enemies, battles, combat statistics, leveling, or attack controls unless explicitly requested.
+This repository is **Lanterns of Larkspur**, a Godot 4.7.2 top-down JRPG written only in GDScript. Milestone 2 explicitly introduced turn-based combat; extend it through the documented data and controller-first interfaces rather than adding action combat.
 
 ## Architecture
 
@@ -33,3 +33,15 @@ Keep doorways at least 48 pixels wide and avoid routes that can pin the player a
 ## Validation
 
 Before completing a change, run a Godot 4.7.2 headless import and a short project launch, inspect output for parser/resource errors, verify `run/main_scene`, input actions, focus defaults, paths, transitions, save/load, purchases, and controller navigation. Manually test relevant acceptance steps in the editor. Prefer reusable systems over town-specific hacks.
+
+## Adventure architecture
+
+- `AdventureMap` parameterizes the Lanternvale Reach, Brackenford, Mosswick, Echoing Grotto, Stillpick Mine, and Floodroot Hollow. Add destinations through `setup()`, bounded collision, an obvious return doorway, distinctive landmarks, treasure, and curated encounters.
+- `EnemyDatabase` owns enemy stats, rewards, AI profile, visual identity, formation membership, and boss status. `BattleUI` owns turn flow and reports results to `Main`; commands are Attack, Skills, Items, Defend, and Flee. Bosses disallow fleeing.
+- The damage baseline is `max(1, attack - defense / 2 + random(-2,2))`. Skills apply their multiplier before defense. Combatants are array records so later party members need not redesign formations.
+- Durable stats are in `GameState`; `stat()` applies Weapon, Armor, and Accessory modifiers. Inns restore HP/MP. `GameState.SKILLS` and item effect fields are the content extension points.
+- `GameState.QUESTS` defines quests. Runtime records contain `status` and `progress`; states are Available (absence), Active, Ready, and Completed. `track(type,target,amount)` is the objective-progress entry point. Guild boards accept and turn in town-specific jobs.
+- Supported objective vocabulary is `visit`, `interact`, `collect`, `defeat_specific`, and general `defeat`. New quests require giver, category, target/count, and reward.
+- Treasure IDs, boss IDs, and world-event IDs are stable persistence keys. Never rename shipped IDs without migration. Boss definitions set `boss=true` and defeated persistent bosses must not respawn.
+- Save version 2 persists equipment, stats, progression, quests, treasure, bosses, events, and scene/map ID while supplying defaults for version 1 saves.
+
