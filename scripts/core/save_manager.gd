@@ -10,5 +10,6 @@ func save_game()->bool:
 func load_game()->bool:
  if not has_save(): last_error="No save found."; return false
  var f=FileAccess.open(SAVE_PATH,FileAccess.READ); var parsed=JSON.parse_string(f.get_as_text())
- if not parsed is Dictionary or int(parsed.get("version",0))!=1: last_error="The save is unreadable or incompatible."; return false
+ if not parsed is Dictionary or int(parsed.get("version",0))<1 or int(parsed.get("version",0))>2: last_error="The save is unreadable or incompatible."; return false
  GameState.restore(parsed); last_error=""; return true
+
