@@ -37,11 +37,15 @@ func _rest():
  else: body.text="Maeve smiles gently. 'Come back when the road has been kinder.'"
 func pause_menu():
  _base("Travel Journal",Vector2(560,340),Vector2(40,10));mode="pause";get_tree().paused=true;var mins=int(GameState.play_seconds)/60;body.text="[b]%s — Level %d[/b]  HP %d/%d  MP %d/%d\nLocation: %s  Crowns: %d  Journey: %02d:%02d\n%s"%[GameState.HERO_NAME,GameState.level,GameState.hp,GameState.stat("max_hp"),GameState.mp,GameState.stat("max_mp"),GameState.current_location,GameState.crowns,mins,int(GameState.play_seconds)%60,_inventory_text()]
- for option in ["Quest Log","Equipment","Return to game","Quit to title"]:
+ for option in ["Area Map","Quest Log","Equipment","Return to game","Quit to title"]:
   var b=Button.new(); b.text=option; buttons.add_child(b)
- buttons.get_child(0).pressed.connect(quest_log);buttons.get_child(1).pressed.connect(equipment_menu);buttons.get_child(2).pressed.connect(_close);buttons.get_child(3).pressed.connect(func():get_tree().paused=false;clear();quit_to_title.emit());buttons.get_child(0).grab_focus()
+ buttons.get_child(0).pressed.connect(area_map);buttons.get_child(1).pressed.connect(quest_log);buttons.get_child(2).pressed.connect(equipment_menu);buttons.get_child(3).pressed.connect(_close);buttons.get_child(4).pressed.connect(func():get_tree().paused=false;clear();quit_to_title.emit());buttons.get_child(0).grab_focus()
 func _inventory_text():
  var out=[]; for id in GameState.inventory: out.append("%s ×%d"%[GameState.ITEMS.get(id,{"name":id}).name,GameState.inventory[id]]); return "\n".join(out)
+func area_map():
+ _base("Area Map",Vector2(560,340),Vector2(40,10));mode="pause";body.text="Gold: settlements and services   Gray: caves   Blue: water   White: Ari"
+ var id=str(GameState.flags.get("map_id","town"));var widget=MapWidget.new();widget.custom_minimum_size=Vector2(500,190);widget.size=Vector2(500,190);widget.setup(id,null,Vector2(2600,1900),false);buttons.add_child(widget)
+ var back=Button.new();back.text="Back";back.pressed.connect(pause_menu);buttons.add_child(back);back.grab_focus()
 func quest_log():
  _base("Quest Log",Vector2(560,340),Vector2(40,10));mode="pause";var rows=[]
  for id in GameState.quests:
