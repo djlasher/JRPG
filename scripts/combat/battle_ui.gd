@@ -47,8 +47,8 @@ func _magic_menu():
  if "ember_spark" in GameState.PARTY_DEFS.ari.skills:spell_ids.append("ember_spark")
  for id in GameState.job_state.ari.learned:if ProgressionDatabase.SPELLS.has(id) and id not in spell_ids:spell_ids.append(id)
  for id in spell_ids:
-  if id=="ember_spark":_button("Ember Spark — 6 MP",_use_legacy_magic.bind(id),VisualAssets.icon_for_spell("ember_lance"))
-  else:var spell=ProgressionDatabase.SPELLS[id];_button("%s — %d MP"%[spell.name,spell.cost],_use_magic.bind(id),VisualAssets.icon_for_spell(id))
+  if id=="ember_spark":_button("Ember Spark — 6 MP",_use_legacy_magic.bind(id))
+  else:var spell=ProgressionDatabase.SPELLS.get(id,{});if not spell.is_empty():_button("%s — %d MP"%[spell.get("name",id.capitalize()),spell.get("cost",0)],_use_magic.bind(id))
  _button("BACK",_show_commands);await get_tree().process_frame;commands.get_child(0).grab_focus()
 func _items_menu():
  if locked:return
@@ -77,15 +77,22 @@ func _use_skill(id:String):
  if skill.kind=="heal":var restored=mini(int(skill.power),GameState.stat("max_hp")-GameState.hp);GameState.hp+=restored;_after_player("%s restores %d HP."%[skill.name,restored]);return
  var target=_living()[0];var damage=CombatMath.skill_damage(GameState.stat("attack"),float(skill.power),int(target.defense),1);target.current_hp-=damage;_track_defeat(target);_flash_enemy(enemies.find(target));_after_player("%s deals %d damage to %s!"%[skill.name,damage,target.name])
 func _use_legacy_magic(id:String):
- var spell=GameState.SKILLS[id];var cost=int(spell.cost)
- if GameState.mp<cost:_refresh("Not enough MP for %s."%spell.name);return
- GameState.mp-=cost;var target=_living()[0];var damage=CombatMath.skill_damage(GameState.stat("magic"),float(spell.power),int(target.defense),2);target.current_hp-=damage;_track_defeat(target);_flash_enemy(enemies.find(target));_after_player("%s erupts for %d damage!"%[spell.name,damage])
+ if locked or _living().is_empty():return
+ var spell:Dictionary=GameState.SKILLS.get(id,{})
+ if spell.is_empty():_refresh("That spell pattern is unavailable.");return
+ var cost=int(spell.get("cost",0));var spell_name=str(spell.get("name",id.capitalize()))
+ if GameState.mp<cost:_refresh("Not enough MP for %s."%spell_name);return
+ GameState.mp-=cost;var target:Dictionary=_living()[0];var damage=CombatMath.skill_damage(maxi(1,GameState.stat("magic")),float(spell.get("power",1.0)),int(target.get("defense",0)),2);target.current_hp=int(target.current_hp)-damage;_track_defeat(target);_flash_enemy(enemies.find(target));call_deferred("_after_player","%s erupts for %d damage!"%[spell_name,damage])
 func _use_magic(id:String):
- var spell=ProgressionDatabase.SPELLS[id];var cost=int(spell.cost)
- if GameState.mp<cost:_refresh("Not enough MP for %s."%spell.name);return
+ if locked:return
+ var spell:Dictionary=ProgressionDatabase.SPELLS.get(id,{})
+ if spell.is_empty():_refresh("That spell pattern is unavailable.");return
+ var cost=int(spell.get("cost",0));var spell_name=str(spell.get("name",id.capitalize()))
+ if GameState.mp<cost:_refresh("Not enough MP for %s."%spell_name);return
  GameState.mp-=cost
- if float(spell.power)<=0:_after_player("%s activates: %s."%[spell.name,spell.effect]);return
- var target=_living()[0];var damage=CombatMath.skill_damage(GameState.stat("magic"),float(spell.power),int(target.defense),2);target.current_hp-=damage;_track_defeat(target);_flash_enemy(enemies.find(target));_after_player("%s deals %d damage — %s."%[spell.name,damage,spell.effect])
+ if float(spell.get("power",0))<=0:call_deferred("_after_player","%s activates: %s."%[spell_name,spell.get("effect","Runic field")]);return
+ if _living().is_empty():return
+ var target:Dictionary=_living()[0];var damage=CombatMath.skill_damage(maxi(1,GameState.stat("magic")),float(spell.get("power",1.0)),int(target.get("defense",0)),2);target.current_hp=int(target.current_hp)-damage;_track_defeat(target);_flash_enemy(enemies.find(target));call_deferred("_after_player","%s deals %d damage — %s."%[spell_name,damage,spell.get("effect","Arcane impact")])
 func _use_item(id:String):
  var item=GameState.ITEMS[id]
  if int(GameState.inventory.get(id,0))<1:return
