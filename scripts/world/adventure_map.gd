@@ -24,8 +24,26 @@ func setup(id:String):
  elif id=="lumenport":title="Lumenport, City of Seven Lamps";size=Vector2(1800,1300)
  elif id=="sunstep_abbey":title="Sunstep Abbey";size=Vector2(950,720)
  elif id=="tideglass_aqueduct":title="Tideglass Aqueduct";size=Vector2(1000,700)
- else:title="The Fallen Observatory";size=Vector2(1050,760)
-func _ready():queue_redraw();_walls();player=Player.new();add_child(player);player.position=Vector2(size.x/2,100 if map_id=="region" else size.y-80);_content();_add_minimap()
+ elif id=="fallen_observatory":title="The Fallen Observatory";size=Vector2(1050,760)
+ elif id=="space":title="The Nearlight Expanse";size=Vector2(2200,1500)
+ elif id=="verdant_planet":title="Viridia — Lattice Gardens";size=Vector2(1200,850)
+ elif id=="cinder_planet":title="Cyr Ember — Saffron Outpost";size=Vector2(1200,850)
+ elif id=="aether_moon":title="Orison Moon — Quiet Array";size=Vector2(1100,800)
+ else:title="Cinder Court, City Below";size=Vector2(1300,900)
+func _ready():
+ queue_redraw()
+ _walls()
+ player=Player.new()
+ add_child(player)
+ player.position=Vector2(size.x/2,100 if map_id in ["region","space"] else size.y-80)
+ if map_id=="space":
+  player.appearance_mode="spacecraft"
+  player.speed=230
+ elif map_id=="region" and GameState.vehicles.current!="foot":
+  player.appearance_mode=GameState.vehicles.current
+  player.speed=210
+ _content()
+ _add_minimap()
 func _add_minimap():
  var layer=CanvasLayer.new();layer.layer=5;add_child(layer);var map=MapWidget.new();map.position=Vector2(478,10);map.size=Vector2(152,96);map.setup(map_id,player,size,true);layer.add_child(map)
 func _walls():
@@ -45,6 +63,10 @@ func _content():
   {"position":Vector2(960,1480),"kind":"event","payload":{"id":"old_battlefield","text":"Rustless spearheads mark a battle nobody in the valley remembers winning."}},
   {"position":Vector2(1880,1380),"kind":"event","payload":{"id":"singing_stone","text":"The split standing stone hums the same note as Larkspur's church bell."}},
   {"position":Vector2(2380,1100),"kind":"event","payload":{"id":"rare_tracks","text":"Glass-bright pawprints lead away from the road. A rare fox watches from the reeds."}}]
+  if not GameState.vehicles.ground:interactables.append({"position":Vector2(1120,1200),"kind":"unlock_vehicle","payload":{"id":"ground","text":"The guild mechanic hands over the reins to the Reedrunner, a swift road wagon."}})
+  elif not GameState.vehicles.boat:interactables.append({"position":Vector2(2100,1050),"kind":"unlock_vehicle","payload":{"id":"boat","text":"Mosswick launches the blue-hulled Lanternwake for Ari's party."}})
+  elif not GameState.vehicles.aircraft:interactables.append({"position":Vector2(1700,1650),"kind":"unlock_vehicle","payload":{"id":"aircraft","text":"Sunstep's engineers unfold the Skydart's brass wings."}})
+  elif not GameState.vehicles.spacecraft:interactables.append({"position":Vector2(2380,500),"kind":"unlock_vehicle","payload":{"id":"spacecraft","text":"Lumenport's sealed hangar opens. The Waylight Comet waits beyond the clouds."}})
   for e in ENCOUNTERS:if e[0] not in GameState.defeated_bosses:interactables.append({"position":e[1],"kind":"battle","payload":{"enemy":e[0]}})
  else:
   interactables=[{"position":Vector2(size.x/2,size.y-55),"kind":"return_region","payload":{}},{"position":Vector2(size.x/2,95),"kind":"save","payload":{}}]
@@ -56,6 +78,10 @@ func _content():
   elif map_id=="sunstep_abbey":interactables.append({"position":Vector2(475,250),"kind":"event","payload":{"id":"abbey_blessing","text":"The abbey's mirror pool reflects three lights though only two lamps burn."}});GameState.track("visit","sunstep_abbey")
   elif map_id in ["tideglass_aqueduct","fallen_observatory"]:
    var puzzle_id="aqueduct_gates" if map_id=="tideglass_aqueduct" else "observatory_lenses";interactables.append({"position":Vector2(size.x/2,300),"kind":"puzzle","payload":{"id":puzzle_id,"text":"The mechanism settles into alignment. A sealed route opens."}});interactables.append({"position":Vector2(size.x-180,160),"kind":"battle","payload":{"enemy":"stonewarden" if map_id=="tideglass_aqueduct" else "mire_hart"}})
+  elif map_id=="space":
+   interactables=[{"position":Vector2(400,350),"kind":"travel","payload":{"id":"verdant_planet"}},{"position":Vector2(1500,350),"kind":"travel","payload":{"id":"cinder_planet"}},{"position":Vector2(1700,1100),"kind":"travel","payload":{"id":"aether_moon"}},{"position":Vector2(900,900),"kind":"travel","payload":{"id":"hell_city"}},{"position":Vector2(1150,600),"kind":"ship_battle","payload":{}}]
+  elif map_id in ["verdant_planet","cinder_planet","aether_moon","hell_city"]:
+   interactables.append({"position":Vector2(size.x/2,100),"kind":"return_space","payload":{}});interactables.append({"position":Vector2(250,300),"kind":"shop","payload":{"id":"general","name":title+" Exchange"}});interactables.append({"position":Vector2(500,350),"kind":"inn","payload":{}});interactables.append({"position":Vector2(800,280),"kind":"event","payload":{"id":map_id+"_welcome","text":("A horned archivist offers tea and a perfectly ordinary library card." if map_id=="hell_city" else "Local envoys welcome the Waylight travelers and mark nearby ruins on their chart.")}});if map_id=="verdant_planet" and not GameState.story_branches.has("first_contact"):interactables.append({"position":Vector2(950,420),"kind":"branch","payload":{}});if map_id not in GameState.known_planets and map_id!="hell_city":GameState.known_planets.append(map_id)
   elif map_id=="echoing_grotto":for e in [["gloomwing",Vector2(220,230)],["stonejaw",Vector2(510,300)]]:interactables.append({"position":e[1],"kind":"battle","payload":{"enemy":e[0]}})
   elif map_id=="stillpick_mine":interactables.append({"position":Vector2(200,280),"kind":"event","payload":{"id":"scout_lio","text":"Scout Lio is bruised but alive. He points toward a grinding sound below."}});if "stonewarden" not in GameState.defeated_bosses:interactables.append({"position":Vector2(580,170),"kind":"battle","payload":{"enemy":"stonewarden"}})
   elif "mire_hart" not in GameState.defeated_bosses:interactables.append({"position":Vector2(350,180),"kind":"battle","payload":{"enemy":"mire_hart"}})
@@ -81,6 +107,8 @@ func _draw():
  elif map_id in ["brackenford","mosswick"]:_draw_settlement()
  elif map_id=="lumenport":_draw_city()
  elif map_id=="sunstep_abbey":_draw_abbey()
+ elif map_id=="space":_draw_space()
+ elif map_id in ["verdant_planet","cinder_planet","aether_moon","hell_city"]:_draw_other_world()
  for it in interactables:
   if it.kind=="battle":_draw_enemy(it.position,it.payload.enemy)
   elif it.kind=="treasure":draw_rect(Rect2(it.position-Vector2(16,12),Vector2(32,24)),Color("9d612f"));draw_rect(Rect2(it.position-Vector2(13,9),Vector2(26,5)),Color("e3b651"))
@@ -110,4 +138,8 @@ func _draw_city():
  var districts=[[Vector2(300,280),"LANTERN MARKET",Color("b97850")],[Vector2(850,260),"GRAND GUILD",Color("4b7778")],[Vector2(1400,280),"HIGH TEMPLE",Color("8a7195")],[Vector2(420,760),"RIVER INN",Color("587d99")],[Vector2(1200,760),"BEACON HALL",Color("9a8258")],[Vector2(1450,560),"ARSENAL",Color("7c6260")],[Vector2(250,570),"APOTHECARY",Color("6f8a5b")]]
  for b in districts:var p:Vector2=b[0];var c:Color=b[2];draw_rect(Rect2(p-Vector2(105,65),Vector2(210,130)),c);draw_colored_polygon(PackedVector2Array([p+Vector2(-120,-65),p+Vector2(0,-125),p+Vector2(120,-65)]),c.darkened(.25));draw_rect(Rect2(p+Vector2(-18,15),Vector2(36,50)),Color("49342c"));draw_string(ThemeDB.fallback_font,p+Vector2(-95,90),b[1],0,200,15,Color("fff1cf"))
 func _draw_abbey():draw_circle(Vector2(475,350),150,Color("3d8dab"));draw_circle(Vector2(475,350),115,Color("8bc0bd"));draw_rect(Rect2(300,100,350,170),Color("c4a276"));draw_colored_polygon(PackedVector2Array([Vector2(280,100),Vector2(475,20),Vector2(670,100)]),Color("8e6f67"));draw_string(ThemeDB.fallback_font,Vector2(355,210),"MIRROR-POOL CHAPEL",0,300,17,Color("fff1cf"))
+func _draw_space():
+ draw_rect(Rect2(Vector2.ZERO,size),Color("070b20"));for x in range(40,int(size.x),110):for y in range(50,int(size.y),95):draw_circle(Vector2(x+(y%43),y),2,Color("dce8ff"));for data in [[Vector2(400,350),Color("58a875"),"VIRIDIA"],[Vector2(1500,350),Color("d27b45"),"CYR EMBER"],[Vector2(1700,1100),Color("a2a8c9"),"ORISON"],[Vector2(900,900),Color("a34d67"),"CINDER GATE"]]:draw_circle(data[0],55,data[1]);draw_circle(data[0]-Vector2(15,12),13,data[1].lightened(.25));draw_string(ThemeDB.fallback_font,data[0]+Vector2(-55,80),data[2],0,130,15,Color.WHITE)
+func _draw_other_world():
+ var ground=Color("769d72") if map_id=="verdant_planet" else (Color("b66b43") if map_id=="cinder_planet" else (Color("7d82a7") if map_id=="aether_moon" else Color("6f3646")));draw_rect(Rect2(Vector2.ZERO,size),ground);var water=Color("5cc5b0") if map_id=="verdant_planet" else Color("cf6950");draw_rect(Rect2(0,size.y*.68,size.x,size.y*.18),water);for p in [Vector2(250,300),Vector2(500,350),Vector2(800,280)]:draw_rect(Rect2(p-Vector2(65,45),Vector2(130,90)),Color("d0b17a" if map_id!="hell_city" else "58334b"));draw_colored_polygon(PackedVector2Array([p+Vector2(-75,-45),p+Vector2(0,-95),p+Vector2(75,-45)]),Color("825e68"))
 
