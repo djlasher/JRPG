@@ -21,7 +21,7 @@ const WEAPONS={"Sword":Rect2(50,680,100,115),"Great Sword":Rect2(155,680,100,115
 const ARMOR={"Head":Rect2(50,795,105,115),"Body":Rect2(160,795,105,115),"Hands":Rect2(270,795,105,115),"Feet":Rect2(430,795,105,115),"Accessory1":Rect2(650,795,105,115),"Accessory2":Rect2(650,795,105,115)}
 const CHESTS=[Rect2(250,920,145,95),Rect2(405,920,145,95),Rect2(560,920,145,95),Rect2(715,920,145,95),Rect2(875,920,145,95)]
 
-static func icon_for_enemy(id:String)->AtlasTexture:return _icon(MONSTERS.get(id,MONSTERS.mossling))
+static func icon_for_enemy(id:String)->AtlasTexture:return PixelAssets.enemy_icon(id)
 static func icon_for_spell(id:String)->AtlasTexture:return _icon(SPELLS.get(id,SPELLS.aether_scan))
 static func icon_for_item(data:Dictionary)->AtlasTexture:
  var slot=str(data.get("slot",data.get("type","")))
@@ -30,3 +30,4 @@ static func icon_for_item(data:Dictionary)->AtlasTexture:
 static func chest_region(tier:int)->Rect2:return CHESTS[clampi(tier,0,CHESTS.size()-1)]
 static func _icon(region:Rect2)->AtlasTexture:
  var icon=AtlasTexture.new();icon.atlas=ATLAS;icon.region=region;return icon
+
