@@ -24,6 +24,8 @@ func _continue():
   var saved_map=str(GameState.flags.get("map_id","town"))
   if saved_map=="town":_enter_town()
   else:_enter_adventure(saved_map,true)
+ else:
+  ui.feedback("Continue failed: "+SaveManager.last_error)
 func _enter_town():
  if title_layer: title_layer.queue_free();title_layer=null
  if world:world.queue_free()
