@@ -12,7 +12,7 @@ func load_game()->bool:
  var f=FileAccess.open(SAVE_PATH,FileAccess.READ)
  if f==null:last_error="The save file could not be opened.";return false
  var parsed=JSON.parse_string(f.get_as_text())
- if not parsed is Dictionary or int(parsed.get("version",0))<1 or int(parsed.get("version",0))>3: last_error="The save is unreadable or incompatible."; return false
+ if not parsed is Dictionary or int(parsed.get("version",0))<1 or int(parsed.get("version",0))>4: last_error="The save is unreadable or incompatible."; return false
  if not parsed.has("inventory") or not parsed.has("position"):last_error="The save is incomplete.";return false
  GameState.restore(parsed);last_error="";return true
 
