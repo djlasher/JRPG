@@ -21,7 +21,7 @@ func _refresh(message:String):
 func _living():return enemies.filter(func(e):return e.current_hp>0)
 func _attack():
  if locked:return
- var target=_living()[0];var damage=max(1,GameState.stat("attack")-int(target.defense)/2+randi_range(-2,2));target.current_hp-=damage;GameState.track("defeat_specific",target.id,1 if target.current_hp<=0 else 0);_after_player("Ari strikes %s for %d!"%[target.name,damage])
+ var target=_living()[0];var raw:int=GameState.stat("attack")-int(target.defense)/2+randi_range(-2,2);var damage:int=clampi(raw,1,999);target.current_hp-=damage;GameState.track("defeat_specific",target.id,1 if target.current_hp<=0 else 0);_after_player("Ari strikes %s for %d!"%[target.name,damage])
 func _skills():
  if locked:return
  if GameState.mp<4:_refresh("Not enough MP.");return
@@ -41,7 +41,7 @@ func _after_player(message:String):
 func _enemy_turn():
  var total=0
  for e in _living():
-  var power=int(e.attack)+(4 if e.ai in ["aggressive","boss"] else 0);var damage=max(1,power-GameState.stat("defense")/2+randi_range(-2,2));if defending:damage=max(1,damage/2);GameState.hp-=damage;total+=damage
+  var power:int=int(e.attack)+(4 if e.ai in ["aggressive","boss"] else 0);var raw:int=power-int(GameState.stat("defense")*0.35)+randi_range(-1,3);var damage:int=clampi(raw,1,999);if defending:damage=maxi(1,damage/2);GameState.hp=maxi(0,GameState.hp-damage);total+=damage
  defending=false
  if GameState.hp<=0:GameState.hp=0;_refresh("Ari falls beneath the onslaught.");await get_tree().create_timer(.8,true).timeout;get_tree().paused=false;battle_finished.emit(false,"game_over");queue_free();return
  locked=false;_refresh("The enemy turn deals %d total damage."%total);commands.get_child(0).grab_focus()
