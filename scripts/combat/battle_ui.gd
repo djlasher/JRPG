@@ -9,9 +9,11 @@ var commands:VBoxContainer
 var defending:=false
 var locked:=false
 func setup(id:String):enemy_id=id
-func _ready():process_mode=Node.PROCESS_MODE_ALWAYS;get_tree().paused=true;_build();for id in EnemyDatabase.formation(enemy_id):var e=EnemyDatabase.ENEMIES[id].duplicate();e.id=id;e.current_hp=e.hp;enemies.append(e);GameState.discover_enemy(id);_refresh("Enemies block the road!")
+func _ready():process_mode=Node.PROCESS_MODE_ALWAYS;get_tree().paused=true;for id in EnemyDatabase.formation(enemy_id):var e=EnemyDatabase.ENEMIES[id].duplicate();e.id=id;e.current_hp=e.hp;enemies.append(e);GameState.discover_enemy(id);_build();_refresh("Enemies block the road!")
 func _build():
- var bg=ColorRect.new();bg.color=Color("1b2438");bg.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT);add_child(bg)
+ var bg=ColorRect.new();bg.color=Color("101522");bg.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT);add_child(bg)
+ var portraits=HBoxContainer.new();portraits.position=Vector2(80,8);portraits.size=Vector2(480,174);portraits.alignment=BoxContainer.ALIGNMENT_CENTER;portraits.add_theme_constant_override("separation",18);add_child(portraits)
+ for e in enemies:var portrait=TextureRect.new();portrait.texture=VisualAssets.icon_for_enemy(e.id);portrait.custom_minimum_size=Vector2(125,170);portrait.expand_mode=TextureRect.EXPAND_IGNORE_SIZE;portrait.stretch_mode=TextureRect.STRETCH_KEEP_ASPECT_CENTERED;portrait.texture_filter=CanvasItem.TEXTURE_FILTER_LINEAR;portrait.tooltip_text=e.name;portraits.add_child(portrait)
  panel=PanelContainer.new();panel.position=Vector2(25,190);panel.size=Vector2(590,150);add_child(panel);var h=HBoxContainer.new();panel.add_child(h);info=RichTextLabel.new();info.bbcode_enabled=true;info.custom_minimum_size=Vector2(360,130);h.add_child(info);commands=VBoxContainer.new();h.add_child(commands)
  for label in ["ATTACK","SKILLS","ITEMS","DEFEND","FLEE"]:var b=Button.new();b.text=label;commands.add_child(b)
  commands.get_child(0).pressed.connect(_attack);commands.get_child(1).pressed.connect(_skills);commands.get_child(2).pressed.connect(_item);commands.get_child(3).pressed.connect(_defend);commands.get_child(4).pressed.connect(_flee);commands.get_child(0).grab_focus()
@@ -77,4 +79,3 @@ func _victory():
  var exp=0;var money=0;for e in enemies:exp+=int(e.exp);money+=int(e.crowns)
  var notes=GameState.gain_rewards(exp,money);GameState.gain_job_points(maxi(8,exp/3));for member_id in GameState.party:GameState.lattice_points[member_id]=int(GameState.lattice_points.get(member_id,0))+maxi(1,exp/25);for e in enemies:GameState.discover_enemy(e.id,true);if EnemyDatabase.ENEMIES[enemy_id].get("boss",false) and enemy_id not in GameState.defeated_bosses:GameState.defeated_bosses.append(enemy_id)
  _refresh("Victory! %d EXP and %d crowns. %s"%[exp,money," ".join(notes)]);await get_tree().create_timer(1.2,true).timeout;get_tree().paused=false;battle_finished.emit(true,enemy_id);queue_free()
-

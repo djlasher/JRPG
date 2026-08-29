@@ -76,3 +76,9 @@ Before completing a change, run a Godot 4.7.2 headless import and a short projec
 - Equipment slots are Weapon, Head, Body, Hands, Feet, Accessory1, and Accessory2. Avoid reintroducing generic Armor/Accessory slots except in backward migrations.
 - Treasure remains deterministic and persistent: a shipped chest ID may never silently change its seed or reward identity.
 
+## Visual atlas architecture
+
+- Generated raster art lives under `assets/generated/`; runtime region mappings belong in `VisualAssets`. Never scatter raw atlas coordinates through gameplay scripts.
+- Enemy IDs remain the durable contract for quests, saves, formations, and bestiary records. Visual substitutions should update `VisualAssets.MONSTERS`, not rename shipped enemy IDs.
+- `VisualAssets` supplies `AtlasTexture` icons for UI and source regions for custom `_draw()` code. Preserve transparent padding and use aspect-preserving scaling for portraits.
+- The current atlas is intentionally text-free. Names and stats remain native Godot controls for localization, focus, accessibility, and save compatibility.

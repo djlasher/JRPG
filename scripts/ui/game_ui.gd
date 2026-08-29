@@ -53,7 +53,7 @@ func _activate_node(id:String):GameState.activate_lattice("ari",id);advancement_
 func magic_menu():
  _base("Skills & Encoded Magic",Vector2(570,350),Vector2(35,5));mode="pause";var rows=[]
  for id in GameState.job_state.ari.learned:
-  if ProgressionDatabase.SPELLS.has(id):var s=ProgressionDatabase.SPELLS[id];rows.append("[b]%s — %s[/b]  %d MP\n%s; %s. %s"%[s.name,s.school,s.cost,s.target,s.effect,s.get("description","Encoded spell pattern")])
+  if ProgressionDatabase.SPELLS.has(id):var s=ProgressionDatabase.SPELLS[id];rows.append("[b]%s — %s[/b]  %d MP\n%s; %s. %s"%[s.name,s.school,s.cost,s.target,s.effect,s.get("description","Encoded spell pattern")]);var spell_button=Button.new();spell_button.text="  %s — %s"%[s.name,s.school];spell_button.icon=VisualAssets.icon_for_spell(id);spell_button.icon_max_width=40;buttons.add_child(spell_button)
   else:rows.append("[b]%s[/b] — Job/weapon technique"%str(id).capitalize())
  body.text="\n\n".join(rows);var back=Button.new();back.text="Back";back.pressed.connect(pause_menu);buttons.add_child(back);back.grab_focus()
 func _inventory_text():
@@ -107,7 +107,7 @@ func equipment_menu():
  for id in GameState.inventory:
   var data=GameState.item_data(id);var slot=str(data.get("slot",data.get("type","")));if slot=="Armor":slot="Body";if slot=="Accessory":slot="Accessory1"
   if slot in GameState.equipment:
-   var current=GameState.item_data(GameState.equipment[slot]);var rarity=ProgressionDatabase.RARITIES.get(data.get("rarity","common"),ProgressionDatabase.RARITIES.common);var delta=[];for stat_key in data.get("stats",{}):var change=int(data.stats[stat_key])-int(current.get("stats",{}).get(stat_key,current.get(stat_key,0)));delta.append("%s %+d"%[stat_key.capitalize(),change]);var b=Button.new();b.text="[%s] %s (Rating %d)\n%s: %s  →  %s | %s"%[rarity.name,data.name,data.get("rating",0),slot,current.get("name","Empty"),data.name,", ".join(delta)];b.pressed.connect(_equip.bind(id));buttons.add_child(b)
+   var current=GameState.item_data(GameState.equipment[slot]);var rarity=ProgressionDatabase.RARITIES.get(data.get("rarity","common"),ProgressionDatabase.RARITIES.common);var delta=[];for stat_key in data.get("stats",{}):var change=int(data.stats[stat_key])-int(current.get("stats",{}).get(stat_key,current.get(stat_key,0)));delta.append("%s %+d"%[stat_key.capitalize(),change]);var b=Button.new();b.text="[%s] %s (Rating %d)\n%s: %s  →  %s | %s"%[rarity.name,data.name,data.get("rating",0),slot,current.get("name","Empty"),data.name,", ".join(delta)];b.icon=VisualAssets.icon_for_item(data);b.icon_max_width=44;b.pressed.connect(_equip.bind(id));buttons.add_child(b)
  var back=Button.new();back.text="Back";back.pressed.connect(pause_menu);buttons.add_child(back);buttons.get_child(0).grab_focus()
 func _equip_name(slot:String):var id=GameState.equipment.get(slot,"");return "None" if id=="" else GameState.item_data(id).name
 func _equip(id:String):GameState.equip_instance(id);equipment_menu()
@@ -132,4 +132,3 @@ func _close():
  var actor=panel.get_meta("actor",null) if panel else null; if actor: actor.talking=false
  if mode=="pause": get_tree().paused=false
  clear(); dialogue_closed.emit()
-

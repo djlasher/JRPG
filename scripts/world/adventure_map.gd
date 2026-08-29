@@ -111,7 +111,7 @@ func _draw():
  elif map_id in ["verdant_planet","cinder_planet","aether_moon","hell_city"]:_draw_other_world()
  for it in interactables:
   if it.kind=="battle":_draw_enemy(it.position,it.payload.enemy)
-  elif it.kind=="treasure":draw_rect(Rect2(it.position-Vector2(16,12),Vector2(32,24)),Color("9d612f"));draw_rect(Rect2(it.position-Vector2(13,9),Vector2(26,5)),Color("e3b651"))
+  elif it.kind=="treasure":draw_texture_rect_region(VisualAssets.ATLAS,Rect2(it.position-Vector2(24,18),Vector2(48,36)),VisualAssets.chest_region(1))
   elif it.kind=="save":draw_circle(it.position,18,Color("82d9d0"));draw_circle(it.position,9,Color.WHITE);draw_string(ThemeDB.fallback_font,it.position+Vector2(-35,34),"WAYLIGHT",0,90,12,Color.WHITE)
   elif it.kind=="guild":draw_string(ThemeDB.fallback_font,it.position+Vector2(-40,42),"GUILD",0,100,13,Color("fff0c2"))
 func _tree(p):draw_circle(p,34,Color("356445"));draw_circle(p+Vector2(18,-12),27,Color("497d4e"));draw_rect(Rect2(p+Vector2(-5,22),Vector2(10,30)),Color("76513a"))
@@ -121,11 +121,8 @@ func _draw_location(p:Vector2,label:String,kind:String,color:Color):
  else:draw_circle(p,34,color);draw_circle(p+Vector2(0,9),22,Color("171923"));if kind=="mine":draw_line(p+Vector2(-22,-18),p+Vector2(22,20),Color("d3b46c"),5)
  draw_string(ThemeDB.fallback_font,p+Vector2(-72,58),label,0,160,14,Color("fff4cf"))
 func _draw_enemy(p:Vector2,id:String):
- var e=EnemyDatabase.ENEMIES[id];var c=Color(e.color)
- if id in ["gloomwing","lantern_moth"]:draw_colored_polygon(PackedVector2Array([p+Vector2(-25,0),p+Vector2(0,-15),p+Vector2(25,0),p+Vector2(0,14)]),c);draw_circle(p,9,c.lightened(.2))
- elif id in ["briarback","mire_hart"]:draw_colored_polygon(PackedVector2Array([p+Vector2(-20,12),p+Vector2(-12,-14),p,p+Vector2(12,-14),p+Vector2(20,12)]),c);draw_line(p+Vector2(-8,-12),p+Vector2(-18,-28),c.lightened(.3),4);draw_line(p+Vector2(8,-12),p+Vector2(18,-28),c.lightened(.3),4)
- elif id in ["roadshade","hollow_knight","stonewarden"]:draw_rect(Rect2(p-Vector2(13,19),Vector2(26,38)),c);draw_circle(p+Vector2(0,-22),10,c.lightened(.15))
- else:draw_circle(p,19,c);draw_circle(p+Vector2(-8,-12),10,c.lightened(.15));draw_circle(p+Vector2(8,-12),10,c.lightened(.15))
+ var e=EnemyDatabase.ENEMIES[id];var source=VisualAssets.MONSTERS.get(id,VisualAssets.MONSTERS.mossling)
+ draw_texture_rect_region(VisualAssets.ATLAS,Rect2(p-Vector2(28,34),Vector2(56,68)),source)
  draw_string(ThemeDB.fallback_font,p+Vector2(-55,38),e.name,0,120,12,Color.WHITE)
 func _draw_settlement():
  var water_color=Color("438eaa");if map_id=="brackenford":draw_rect(Rect2(0,520,size.x,95),water_color);draw_rect(Rect2(430,500,240,135),Color("b9955f"))
@@ -142,4 +139,3 @@ func _draw_space():
  draw_rect(Rect2(Vector2.ZERO,size),Color("070b20"));for x in range(40,int(size.x),110):for y in range(50,int(size.y),95):draw_circle(Vector2(x+(y%43),y),2,Color("dce8ff"));for data in [[Vector2(400,350),Color("58a875"),"VIRIDIA"],[Vector2(1500,350),Color("d27b45"),"CYR EMBER"],[Vector2(1700,1100),Color("a2a8c9"),"ORISON"],[Vector2(900,900),Color("a34d67"),"CINDER GATE"]]:draw_circle(data[0],55,data[1]);draw_circle(data[0]-Vector2(15,12),13,data[1].lightened(.25));draw_string(ThemeDB.fallback_font,data[0]+Vector2(-55,80),data[2],0,130,15,Color.WHITE)
 func _draw_other_world():
  var ground=Color("769d72") if map_id=="verdant_planet" else (Color("b66b43") if map_id=="cinder_planet" else (Color("7d82a7") if map_id=="aether_moon" else Color("6f3646")));draw_rect(Rect2(Vector2.ZERO,size),ground);var water=Color("5cc5b0") if map_id=="verdant_planet" else Color("cf6950");draw_rect(Rect2(0,size.y*.68,size.x,size.y*.18),water);for p in [Vector2(250,300),Vector2(500,350),Vector2(800,280)]:draw_rect(Rect2(p-Vector2(65,45),Vector2(130,90)),Color("d0b17a" if map_id!="hell_city" else "58334b"));draw_colored_polygon(PackedVector2Array([p+Vector2(-75,-45),p+Vector2(0,-95),p+Vector2(75,-45)]),Color("825e68"))
-
