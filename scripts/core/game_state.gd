@@ -47,15 +47,52 @@ var discovered_locations:Array[String]=["town"]
 var fast_travel:Array[String]=["town"]
 var puzzle_states:Dictionary={}
 var guild_reputation:=0
+const JOBS={
+ "pathguard":{"name":"Pathguard","role":"Balanced arms and protection","mods":{"attack":1.1,"defense":1.1},"unlocks":[[1,"lantern_cut"],[3,"hold_fast"],[6,"shield_bash"]]},
+ "flame_scholar":{"name":"Flame Scholar","role":"Offensive elemental magic","mods":{"magic":1.35,"max_mp":1.2},"unlocks":[[1,"ember_spark"],[4,"rillflare"],[7,"starfall"]]},
+ "way_mender":{"name":"Way Mender","role":"Healing and spiritual support","mods":{"magic":1.2,"resistance":1.25},"unlocks":[[1,"waylight_mend"],[4,"tide_mend"],[8,"renewal"]]},
+ "reed_ranger":{"name":"Reed Ranger","role":"Fast ranged pressure","mods":{"speed":1.3,"attack":1.1},"unlocks":[[1,"quickshot"],[5,"wind_mark"]]},
+ "lantern_rogue":{"name":"Lantern Rogue","role":"Speed, tricks, and locks","mods":{"speed":1.4},"unlocks":[[1,"feint"],[4,"open_secret"]]},
+ "stone_monk":{"name":"Stone Monk","role":"Durable unarmed fighter","mods":{"max_hp":1.2,"defense":1.15},"unlocks":[[1,"stone_palm"],[6,"still_mind"]]},
+ "tide_engineer":{"name":"Tide Engineer","role":"Devices and party support","mods":{"defense":1.1,"magic":1.1},"unlocks":[[1,"field_repair"],[5,"shock_coil"]]},
+ "star_priest":{"name":"Star Priest","role":"Light magic and wards","mods":{"max_mp":1.3,"resistance":1.3},"unlocks":[[1,"starlit_prayer"],[5,"ward_circle"]]},
+ "beacon_knight":{"name":"Beacon Knight","role":"Advanced protector","advanced":true,"clue":"Master Pathguard and aid Lumenport","mods":{"attack":1.25,"defense":1.4},"unlocks":[[1,"beacon_wall"],[5,"radiant_oath"]]},
+ "spellsteel":{"name":"Spellsteel","role":"Advanced weapon magic","advanced":true,"clue":"Study arms and flame","mods":{"attack":1.25,"magic":1.25},"unlocks":[[1,"ember_edge"],[6,"tideblade"]]},
+ "sky_corsair":{"name":"Sky Corsair","role":"Aircraft-era speed fighter","advanced":true,"clue":"Acquire the Skydart","mods":{"speed":1.5,"attack":1.2},"unlocks":[[1,"dive_arc"],[5,"gale_salvo"]]},
+ "void_cantor":{"name":"Void Cantor","role":"Secret dimensional caster","advanced":true,"secret":true,"clue":"Earn a contract in Hell","mods":{"magic":1.5,"resistance":1.2},"unlocks":[[1,"void_chime"],[7,"black_star"]]},
+ "starwright":{"name":"Starwright","role":"Secret ship-support master","advanced":true,"secret":true,"clue":"Defeat a space bounty","mods":{"magic":1.25,"speed":1.25},"unlocks":[[1,"overcharge"],[6,"constellation_drive"]]}}
+var job_state:Dictionary={"ari":{"current":"pathguard","levels":{"pathguard":1},"jp":{"pathguard":0},"learned":["lantern_cut"],"equipped":[]}}
+var unlocked_jobs:Array[String]=["pathguard","flame_scholar","way_mender","reed_ranger","lantern_rogue","stone_monk","tide_engineer","star_priest"]
+var relationships:Dictionary={"ari:brann":{"points":0,"romance":false,"adult":true},"ari:lyra":{"points":0,"romance":false,"adult":true},"brann:lyra":{"points":0,"romance":false,"adult":true}}
+var relationship_events:Array[String]=[]
+var vehicles:Dictionary={"ground":false,"boat":false,"aircraft":false,"spacecraft":false,"current":"foot"}
+var ship:Dictionary={"name":"Waylight Comet","hull":180,"max_hull":180,"shields":70,"max_shields":70,"energy":60,"weapons":22,"armor":9,"speed":12,"upgrades":[]}
+var known_planets:Array[String]=[]
+var story_branches:Dictionary={}
 func _process(delta):play_seconds+=delta
 func reset():
- crowns=140;inventory={"sunleaf_tonic":2,"clearwater_salt":1,"reed_sword":1,"wayfarer_vest":1};equipment={"Weapon":"reed_sword","Armor":"wayfarer_vest","Accessory":""};current_location="Larkspur";player_position=Vector2(730,850);play_seconds=0;flags={};quests={};opened_treasures=[];defeated_bosses=[];world_events=[];level=1;experience=0;base_stats={"max_hp":85,"max_mp":22,"attack":12,"defense":8,"magic":10,"resistance":7,"speed":10};hp=85;mp=22;party=["ari"];party_state={"ari":{"level":1,"hp":85,"mp":22,"max_hp":85,"max_mp":22,"attack":16,"defense":11,"magic":10,"speed":10}};bestiary={};discovered_locations=["town"];fast_travel=["town"];puzzle_states={};guild_reputation=0;state_changed.emit()
+ crowns=140;inventory={"sunleaf_tonic":2,"clearwater_salt":1,"reed_sword":1,"wayfarer_vest":1};equipment={"Weapon":"reed_sword","Armor":"wayfarer_vest","Accessory":""};current_location="Larkspur";player_position=Vector2(730,850);play_seconds=0;flags={};quests={};opened_treasures=[];defeated_bosses=[];world_events=[];level=1;experience=0;base_stats={"max_hp":85,"max_mp":22,"attack":12,"defense":8,"magic":10,"resistance":7,"speed":10};hp=85;mp=22;party=["ari"];party_state={"ari":{"level":1,"hp":85,"mp":22,"max_hp":85,"max_mp":22,"attack":16,"defense":11,"magic":10,"speed":10}};bestiary={};discovered_locations=["town"];fast_travel=["town"];puzzle_states={};guild_reputation=0;job_state={"ari":{"current":"pathguard","levels":{"pathguard":1},"jp":{"pathguard":0},"learned":["lantern_cut"],"equipped":[]}};unlocked_jobs=["pathguard","flame_scholar","way_mender","reed_ranger","lantern_rogue","stone_monk","tide_engineer","star_priest"];relationships={"ari:brann":{"points":0,"romance":false,"adult":true},"ari:lyra":{"points":0,"romance":false,"adult":true},"brann:lyra":{"points":0,"romance":false,"adult":true}};relationship_events=[];vehicles={"ground":false,"boat":false,"aircraft":false,"spacecraft":false,"current":"foot"};ship={"name":"Waylight Comet","hull":180,"max_hull":180,"shields":70,"max_shields":70,"energy":60,"weapons":22,"armor":9,"speed":12,"upgrades":[]};known_planets=[];story_branches={};state_changed.emit()
 func recruit(id:String):
  if id not in PARTY_DEFS or id in party:return
  party.append(id)
  if id=="brann":party_state[id]={"level":maxi(2,level),"hp":120,"mp":12,"max_hp":120,"max_mp":12,"attack":15,"defense":18,"magic":6,"speed":7}
  else:party_state[id]={"level":maxi(2,level),"hp":72,"mp":42,"max_hp":72,"max_mp":42,"attack":8,"defense":8,"magic":20,"speed":13}
+ job_state[id]={"current":"pathguard" if id=="brann" else "flame_scholar","levels":{},"jp":{},"learned":[],"equipped":[]};job_state[id].levels[job_state[id].current]=1;job_state[id].jp[job_state[id].current]=0
  state_changed.emit()
+func change_job(character:String,job_id:String)->bool:
+ if character not in party or job_id not in unlocked_jobs:return false
+ job_state[character].current=job_id
+ if not job_state[character].levels.has(job_id):job_state[character].levels[job_id]=1;job_state[character].jp[job_id]=0
+ state_changed.emit();return true
+func gain_job_points(amount:int):
+ for character in party:
+  var js=job_state[character];var job_id=str(js.current);js.jp[job_id]=int(js.jp.get(job_id,0))+amount
+  while int(js.levels.get(job_id,1))<10 and int(js.jp[job_id])>=int(js.levels.get(job_id,1))*30:
+   js.jp[job_id]-=int(js.levels.get(job_id,1))*30;js.levels[job_id]=int(js.levels.get(job_id,1))+1
+   for unlock in JOBS[job_id].unlocks:if int(unlock[0])<=int(js.levels[job_id]) and unlock[1] not in js.learned:js.learned.append(unlock[1])
+func relationship_tier(key:String)->String:
+ var points=int(relationships.get(key,{"points":0}).points);return "Kindled" if points>=80 else ("Close" if points>=55 else ("Trusted" if points>=30 else ("Friendly" if points>=12 else "Acquainted")))
+func adjust_relationship(key:String,amount:int):if relationships.has(key):relationships[key].points=clampi(int(relationships[key].points)+amount,-50,100)
 func discover_enemy(id:String,defeated:=false):
  var record=bestiary.get(id,{"seen":0,"defeated":0})
  record.seen+=1
@@ -66,6 +103,8 @@ func discover_location(id:String):
  if id not in fast_travel:fast_travel.append(id)
 func stat(key:String)->int:
  var value=int(base_stats.get(key,0))
+ if job_state.has("ari"):
+  var job_id=str(job_state.ari.current);value=int(round(value*float(JOBS.get(job_id,{"mods":{}}).mods.get(key,1.0))))
  for id in equipment.values():
   if id!="":value+=int(ITEMS.get(id,{}).get(key,0))
  return value
@@ -96,7 +135,7 @@ func gain_rewards(exp:int,money:int)->Array[String]:
  while experience>=level*60:
   experience-=level*60;level+=1;base_stats.max_hp+=12;base_stats.max_mp+=4;base_stats.attack+=3;base_stats.defense+=2;base_stats.magic+=2;base_stats.resistance+=2;base_stats.speed+=1;hp=stat("max_hp");mp=stat("max_mp");notes.append("Ari reached level %d!"%level)
  state_changed.emit();return notes
-func serialize()->Dictionary:return {"version":3,"hero":HERO_NAME,"crowns":crowns,"inventory":inventory,"equipment":equipment,"location":current_location,"position":[player_position.x,player_position.y],"play_seconds":play_seconds,"flags":flags,"quests":quests,"opened_treasures":opened_treasures,"defeated_bosses":defeated_bosses,"world_events":world_events,"level":level,"experience":experience,"hp":hp,"mp":mp,"base_stats":base_stats,"party":party,"party_state":party_state,"bestiary":bestiary,"discovered_locations":discovered_locations,"fast_travel":fast_travel,"puzzle_states":puzzle_states,"guild_reputation":guild_reputation}
+func serialize()->Dictionary:return {"version":4,"hero":HERO_NAME,"crowns":crowns,"inventory":inventory,"equipment":equipment,"location":current_location,"position":[player_position.x,player_position.y],"play_seconds":play_seconds,"flags":flags,"quests":quests,"opened_treasures":opened_treasures,"defeated_bosses":defeated_bosses,"world_events":world_events,"level":level,"experience":experience,"hp":hp,"mp":mp,"base_stats":base_stats,"party":party,"party_state":party_state,"bestiary":bestiary,"discovered_locations":discovered_locations,"fast_travel":fast_travel,"puzzle_states":puzzle_states,"guild_reputation":guild_reputation,"job_state":job_state,"unlocked_jobs":unlocked_jobs,"relationships":relationships,"relationship_events":relationship_events,"vehicles":vehicles,"ship":ship,"known_planets":known_planets,"story_branches":story_branches}
 func restore(d:Dictionary):
  crowns=int(d.get("crowns",140))
  inventory=d.get("inventory",{})
@@ -129,5 +168,6 @@ func restore(d:Dictionary):
  for travel_id in d.get("fast_travel",["town"]):fast_travel.append(str(travel_id))
  puzzle_states=d.get("puzzle_states",{})
  guild_reputation=int(d.get("guild_reputation",0))
+ job_state=d.get("job_state",job_state);unlocked_jobs.clear();for saved_job_id in d.get("unlocked_jobs",["pathguard","flame_scholar","way_mender","reed_ranger","lantern_rogue","stone_monk","tide_engineer","star_priest"]):unlocked_jobs.append(str(saved_job_id));relationships=d.get("relationships",relationships);relationship_events.clear();for relationship_event_id in d.get("relationship_events",[]):relationship_events.append(str(relationship_event_id));vehicles=d.get("vehicles",vehicles);ship=d.get("ship",ship);known_planets.clear();for planet_id in d.get("known_planets",[]):known_planets.append(str(planet_id));story_branches=d.get("story_branches",{})
  state_changed.emit()
 
