@@ -82,6 +82,8 @@ Before completing a change, run a Godot 4.7.2 headless import and a short projec
 - Enemy IDs remain the durable contract for quests, saves, formations, and bestiary records. Visual substitutions should update `VisualAssets.MONSTERS`, not rename shipped enemy IDs.
 - `VisualAssets` supplies `AtlasTexture` icons for UI and source regions for custom `_draw()` code. Preserve transparent padding and use aspect-preserving scaling for portraits.
 - The current atlas is intentionally text-free. Names and stats remain native Godot controls for localization, focus, accessibility, and save compatibility.
+- `master_pixel_atlas.png` is the broad world/character source sheet; `PixelAssets` owns its regions. It supplies exploration characters, NPCs, terrain, architecture, interiors, and vehicles. `dark_fantasy_atlas.png` remains the focused portrait/item atlas through `VisualAssets`.
+- Preserve both master sources unchanged. When a region needs cleanup, add a derived sibling asset instead of overwriting either supplied atlas.
 
 ## Battle playability
 
@@ -89,4 +91,3 @@ Before completing a change, run a Godot 4.7.2 headless import and a short projec
 - Ordinary enemy damage is deliberately forgiving enough to support exploration and testing. Bosses may hit harder, but defend and carried healing must remain meaningful and victories provide modest HP/MP recovery.
 - Battle portraits communicate action: player hits flash the target, enemy attacks lunge, and party damage triggers a brief red overlay. Preserve feedback when adding effects rather than reverting combat to text-only updates.
 - Visible encounters roam gently around stable origins. They do not chase yet, and interaction checks must use their live positions.
-

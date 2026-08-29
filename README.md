@@ -78,3 +78,4 @@ A generated transparent atlas now replaces primitive placeholders for visible ex
 
 Combat now uses separate controller-selectable Skills, Magic, and Items lists. Enemy damage is tuned for a forgiving exploration baseline, Defend provides strong mitigation, victories restore some HP/MP, portraits flash/lunge during attacks, and a red screen pulse communicates party damage. Field monsters drift naturally around their encounter positions rather than remaining static.
 
+A second comprehensive pixel atlas now drives Ari's directional exploration appearance, diverse NPC sprites, ground/road/water tiles, Larkspur building exteriors, interior treatments, and ground/boat/air/space vehicle silhouettes. Its regions are centralized in `PixelAssets`, leaving the supplied source sheet intact and ready for progressively mapping portraits, creatures, effects, objects, planets, ships, and markers.

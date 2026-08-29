@@ -54,7 +54,10 @@ func try_interact():
   var d=probe.distance_to(it.position); if d<best and d<48: best=d; chosen=it
  if not chosen.is_empty(): interaction_requested.emit(chosen.kind,chosen.payload)
 func _draw():
- draw_rect(Rect2(Vector2.ZERO,SIZE),Color("79a85b")); draw_rect(Rect2(620,0,300,1200),Color("c7a96a")); draw_rect(Rect2(0,420,1600,240),Color("c7a96a")); draw_rect(Rect2(1400,300,145,260),Color("3f88a2"))
+ for x in range(0,1600,40):for y in range(0,1200,40):draw_texture_rect_region(PixelAssets.ATLAS,Rect2(x,y,40,40),PixelAssets.TILES.grass)
+ for y in range(0,1200,40):for x in range(620,920,40):draw_texture_rect_region(PixelAssets.ATLAS,Rect2(x,y,40,40),PixelAssets.TILES.dirt)
+ for y in range(420,660,40):for x in range(0,1600,40):draw_texture_rect_region(PixelAssets.ATLAS,Rect2(x,y,40,40),PixelAssets.TILES.dirt)
+ for x in range(1400,1545,40):for y in range(300,560,40):draw_texture_rect_region(PixelAssets.ATLAS,Rect2(x,y,40,40),PixelAssets.TILES.water)
  for x in range(0,1600,32): for y in range(0,1200,32): if (x+y)%96==0: draw_circle(Vector2(x+12,y+18),2,Color("d7d06a"))
  for b in BUILDINGS: _draw_building(b)
  for p in [Vector2(85,390),Vector2(145,440),Vector2(1450,920),Vector2(980,1080),Vector2(1020,600)]: _draw_tree(p)
@@ -62,6 +65,5 @@ func _draw():
  draw_circle(Vector2(940,620),18,Color("8ee7e1")); draw_circle(Vector2(940,620),10,Color("e7ffff")); draw_string(ThemeDB.fallback_font,Vector2(900,655),"WAYLIGHT",HORIZONTAL_ALIGNMENT_LEFT,100,12,Color("ecffff"))
  draw_rect(Rect2(620,1125,300,75),Color("ad8c58")); draw_string(ThemeDB.fallback_font,Vector2(695,1170),"SOUTH ROAD",HORIZONTAL_ALIGNMENT_LEFT,200,18,Color("493b30"))
 func _draw_building(b):
- var r:Rect2=b.rect; draw_rect(r,Color(b.color)); draw_polygon(PackedVector2Array([r.position+Vector2(-14,20),r.position+Vector2(r.size.x/2,-55),r.position+Vector2(r.size.x+14,20)]),PackedColorArray([Color(b.color).darkened(.32)])); draw_rect(Rect2(b.door-Vector2(17,45),Vector2(34,45)),Color("4b382f")); draw_rect(Rect2(r.position+Vector2(30,70),Vector2(42,35)),Color("9ed6d2")); draw_rect(Rect2(r.end-Vector2(72,r.size.y-70),Vector2(42,35)),Color("9ed6d2")); draw_string(ThemeDB.fallback_font,r.position+Vector2(16,135),b.name,HORIZONTAL_ALIGNMENT_LEFT,r.size.x-32,14,Color("fff1d0"))
+ var r:Rect2=b.rect;draw_texture_rect_region(PixelAssets.ATLAS,Rect2(r.position-Vector2(0,35),r.size+Vector2(0,35)),PixelAssets.building_region(b.id));draw_rect(Rect2(b.door-Vector2(17,18),Vector2(34,18)),Color(0,0,0,.25));draw_string(ThemeDB.fallback_font,r.position+Vector2(16,r.size.y+18),b.name,HORIZONTAL_ALIGNMENT_LEFT,r.size.x-32,14,Color("fff1d0"))
 func _draw_tree(p): draw_circle(p+Vector2(0,10),24,Color("315f43")); draw_circle(p+Vector2(-14,-4),20,Color("477c4c")); draw_circle(p+Vector2(14,-5),20,Color("4f8b52")); draw_rect(Rect2(p+Vector2(-5,18),Vector2(10,25)),Color("76523b"))
-
