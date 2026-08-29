@@ -66,3 +66,9 @@ Milestone 4 foundations add separate character/job progression, eight foundation
 
 See `docs/day_4_report.md` for the implementation boundary and playtest route.
 
+## Resonance and relics
+
+Milestone 5 adds a controller-driven 120-node Advancement Lattice, Resonance Marks earned in battle, eight schools of magic with sixteen authored spells, and deterministic equipment drops. Gear now uses seven visible slots and five rarity tiers, including a pool of named Myth-Circuit legendaries. The Equipment screen compares rating and stat changes before equipping, and save format 5 retains lattice choices and generated items while migrating earlier saves.
+
+See `docs/day_5_report.md` for the system inventory, validation record, and remaining presentation work.
+
