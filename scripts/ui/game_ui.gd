@@ -38,9 +38,24 @@ func _rest():
  else: body.text="Maeve smiles gently. 'Come back when the road has been kinder.'"
 func pause_menu():
  _base("Travel Journal",Vector2(560,340),Vector2(40,10));mode="pause";get_tree().paused=true;var mins=int(GameState.play_seconds)/60;body.text="[b]%s — Level %d[/b]  HP %d/%d  MP %d/%d\nLocation: %s  Crowns: %d  Journey: %02d:%02d\n%s"%[GameState.HERO_NAME,GameState.level,GameState.hp,GameState.stat("max_hp"),GameState.mp,GameState.stat("max_mp"),GameState.current_location,GameState.crowns,mins,int(GameState.play_seconds)%60,_inventory_text()]
- for option in ["Area Map","Party","Jobs","Relationships","Bestiary","Fast Travel","Quest Log","Equipment","Return to game","Quit to title"]:
+ for option in ["Area Map","Party","Jobs","Advancement Lattice","Skills & Magic","Relationships","Bestiary","Fast Travel","Quest Log","Equipment","Return to game","Quit to title"]:
   var b=Button.new(); b.text=option; buttons.add_child(b)
- buttons.get_child(0).pressed.connect(area_map);buttons.get_child(1).pressed.connect(party_menu);buttons.get_child(2).pressed.connect(job_menu);buttons.get_child(3).pressed.connect(relationship_menu);buttons.get_child(4).pressed.connect(bestiary_menu);buttons.get_child(5).pressed.connect(fast_travel_menu);buttons.get_child(6).pressed.connect(quest_log);buttons.get_child(7).pressed.connect(equipment_menu);buttons.get_child(8).pressed.connect(_close);buttons.get_child(9).pressed.connect(func():get_tree().paused=false;clear();quit_to_title.emit());buttons.get_child(0).grab_focus()
+ buttons.get_child(0).pressed.connect(area_map);buttons.get_child(1).pressed.connect(party_menu);buttons.get_child(2).pressed.connect(job_menu);buttons.get_child(3).pressed.connect(advancement_menu);buttons.get_child(4).pressed.connect(magic_menu);buttons.get_child(5).pressed.connect(relationship_menu);buttons.get_child(6).pressed.connect(bestiary_menu);buttons.get_child(7).pressed.connect(fast_travel_menu);buttons.get_child(8).pressed.connect(quest_log);buttons.get_child(9).pressed.connect(equipment_menu);buttons.get_child(10).pressed.connect(_close);buttons.get_child(11).pressed.connect(func():get_tree().paused=false;clear();quit_to_title.emit());buttons.get_child(0).grab_focus()
+func advancement_menu():
+ _base("Soul-Circuit Lattice",Vector2(590,350),Vector2(25,5));mode="pause";var nodes=ProgressionDatabase.build_grid();body.text="Resonance Marks: %d   Activated: %d/120\nRunic paths carry memory like neon through cathedral glass."%[GameState.lattice_points.get("ari",0),GameState.lattice_active.get("ari",[]).size()]
+ var shown=0
+ for id in nodes:
+  if id in GameState.lattice_active.ari:continue
+  var adjacent=false;for active in GameState.lattice_active.ari:if id in nodes[active].links:adjacent=true
+  if adjacent and shown<8:var b=Button.new();b.text="%s [%s] — %d Marks"%[nodes[id].name,nodes[id].type,nodes[id].cost];b.pressed.connect(_activate_node.bind(id));buttons.add_child(b);shown+=1
+ var back=Button.new();back.text="Back";back.pressed.connect(pause_menu);buttons.add_child(back);buttons.get_child(0).grab_focus()
+func _activate_node(id:String):GameState.activate_lattice("ari",id);advancement_menu()
+func magic_menu():
+ _base("Skills & Encoded Magic",Vector2(570,350),Vector2(35,5));mode="pause";var rows=[]
+ for id in GameState.job_state.ari.learned:
+  if ProgressionDatabase.SPELLS.has(id):var s=ProgressionDatabase.SPELLS[id];rows.append("[b]%s — %s[/b]  %d MP\n%s; %s. %s"%[s.name,s.school,s.cost,s.target,s.effect,s.get("description","Encoded spell pattern")])
+  else:rows.append("[b]%s[/b] — Job/weapon technique"%str(id).capitalize())
+ body.text="\n\n".join(rows);var back=Button.new();back.text="Back";back.pressed.connect(pause_menu);buttons.add_child(back);back.grab_focus()
 func _inventory_text():
  var out=[]; for id in GameState.inventory: out.append("%s ×%d"%[GameState.ITEMS.get(id,{"name":id}).name,GameState.inventory[id]]); return "\n".join(out)
 func area_map():
@@ -88,13 +103,14 @@ func quest_log():
  body.text="No quests accepted yet. Visit a Wayfarers' Guild board." if rows.is_empty() else "\n\n".join(rows)
  var back=Button.new();back.text="Back";back.pressed.connect(pause_menu);buttons.add_child(back);back.grab_focus()
 func equipment_menu():
- _base("Equipment",Vector2(560,340),Vector2(40,10));mode="pause";body.text="Attack %d  Defense %d  Magic %d  Speed %d\nWeapon: %s\nArmor: %s\nAccessory: %s"%[GameState.stat("attack"),GameState.stat("defense"),GameState.stat("magic"),GameState.stat("speed"),_equip_name("Weapon"),_equip_name("Armor"),_equip_name("Accessory")]
+ _base("Equipment Comparison",Vector2(590,350),Vector2(25,5));mode="pause";body.text="Attack %d  Defense %d  Magic %d  Speed %d\nSlots: Weapon · Head · Body · Hands · Feet · Accessory 1 · Accessory 2"%[GameState.stat("attack"),GameState.stat("defense"),GameState.stat("magic"),GameState.stat("speed")]
  for id in GameState.inventory:
-  if GameState.ITEMS.get(id,{}).get("type","") in GameState.equipment:
-   var b=Button.new();b.text="Equip "+GameState.ITEMS[id].name;b.pressed.connect(_equip.bind(id));buttons.add_child(b)
+  var data=GameState.item_data(id);var slot=str(data.get("slot",data.get("type","")));if slot=="Armor":slot="Body";if slot=="Accessory":slot="Accessory1"
+  if slot in GameState.equipment:
+   var current=GameState.item_data(GameState.equipment[slot]);var rarity=ProgressionDatabase.RARITIES.get(data.get("rarity","common"),ProgressionDatabase.RARITIES.common);var delta=[];for stat_key in data.get("stats",{}):var change=int(data.stats[stat_key])-int(current.get("stats",{}).get(stat_key,current.get(stat_key,0)));delta.append("%s %+d"%[stat_key.capitalize(),change]);var b=Button.new();b.text="[%s] %s (Rating %d)\n%s: %s  →  %s | %s"%[rarity.name,data.name,data.get("rating",0),slot,current.get("name","Empty"),data.name,", ".join(delta)];b.pressed.connect(_equip.bind(id));buttons.add_child(b)
  var back=Button.new();back.text="Back";back.pressed.connect(pause_menu);buttons.add_child(back);buttons.get_child(0).grab_focus()
-func _equip_name(slot:String):var id=GameState.equipment[slot];return "None" if id=="" else GameState.ITEMS[id].name
-func _equip(id:String):GameState.equip(id);equipment_menu()
+func _equip_name(slot:String):var id=GameState.equipment.get(slot,"");return "None" if id=="" else GameState.item_data(id).name
+func _equip(id:String):GameState.equip_instance(id);equipment_menu()
 func guild_board(town:String):
  _base("Wayfarers' Guild Board",Vector2(560,340),Vector2(40,10));mode="menu";body.text="Select a posted job. Active jobs can be turned in when ready."
  var ids=["first_road","cave_wings","lost_satchel"] if town=="larkspur" else (["thorn_problem","bandit_ledgers","missing_scout","mine_silence"] if town=="brackenford" else ["moon_moss","ruin_lights","lake_beast","medicine_run","old_arch"])
