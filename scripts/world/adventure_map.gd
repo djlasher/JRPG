@@ -20,7 +20,11 @@ func setup(id:String):
  elif id=="mosswick":title="Mosswick Ferry Village";size=Vector2(900,700)
  elif id=="echoing_grotto":title="Echoing Grotto";size=Vector2(700,460)
  elif id=="stillpick_mine":title="Stillpick Mine";size=Vector2(760,520)
- else:title="Floodroot Hollow";size=Vector2(700,500)
+ elif id=="floodroot_hollow":title="Floodroot Hollow";size=Vector2(700,500)
+ elif id=="lumenport":title="Lumenport, City of Seven Lamps";size=Vector2(1800,1300)
+ elif id=="sunstep_abbey":title="Sunstep Abbey";size=Vector2(950,720)
+ elif id=="tideglass_aqueduct":title="Tideglass Aqueduct";size=Vector2(1000,700)
+ else:title="The Fallen Observatory";size=Vector2(1050,760)
 func _ready():queue_redraw();_walls();player=Player.new();add_child(player);player.position=Vector2(size.x/2,100 if map_id=="region" else size.y-80);_content();_add_minimap()
 func _add_minimap():
  var layer=CanvasLayer.new();layer.layer=5;add_child(layer);var map=MapWidget.new();map.position=Vector2(478,10);map.size=Vector2(152,96);map.setup(map_id,player,size,true);layer.add_child(map)
@@ -30,7 +34,7 @@ func _walls():
 func _wall(r:Rect2):var b=StaticBody2D.new();var c=CollisionShape2D.new();var s=RectangleShape2D.new();s.size=r.size;c.shape=s;c.position=r.position+r.size/2;b.add_child(c);add_child(b)
 func _content():
  if map_id=="region":
-  interactables=[{"position":Vector2(1250,80),"kind":"return","payload":{}},{"position":Vector2(600,1450),"kind":"travel","payload":{"id":"brackenford"}},{"position":Vector2(2180,1200),"kind":"travel","payload":{"id":"mosswick"}},{"position":Vector2(400,1150),"kind":"travel","payload":{"id":"echoing_grotto"}},{"position":Vector2(1500,1420),"kind":"travel","payload":{"id":"stillpick_mine"}},{"position":Vector2(2300,1580),"kind":"travel","payload":{"id":"floodroot_hollow"}},
+  interactables=[{"position":Vector2(1250,80),"kind":"return","payload":{}},{"position":Vector2(600,1450),"kind":"travel","payload":{"id":"brackenford"}},{"position":Vector2(2180,1200),"kind":"travel","payload":{"id":"mosswick"}},{"position":Vector2(400,1150),"kind":"travel","payload":{"id":"echoing_grotto"}},{"position":Vector2(1500,1420),"kind":"travel","payload":{"id":"stillpick_mine"}},{"position":Vector2(2300,1580),"kind":"travel","payload":{"id":"floodroot_hollow"}},{"position":Vector2(2380,420),"kind":"travel","payload":{"id":"lumenport"}},{"position":Vector2(1780,1710),"kind":"travel","payload":{"id":"sunstep_abbey"}},{"position":Vector2(2060,720),"kind":"travel","payload":{"id":"tideglass_aqueduct"}},{"position":Vector2(900,1700),"kind":"travel","payload":{"id":"fallen_observatory"}},
   {"position":Vector2(1980,850),"kind":"event","payload":{"id":"injured_traveler","text":"A traveler leans against the bridge. Your arrival brings visible relief."}},
   {"position":Vector2(350,900),"kind":"event","payload":{"id":"ghost_light_a","target":"ghost_light","text":"A pale lantern drifts between broken stones, leaving no shadow."}},
   {"position":Vector2(450,980),"kind":"event","payload":{"id":"ghost_light_b","target":"ghost_light","text":"A second ghost light answers with three slow pulses."}},
@@ -46,6 +50,12 @@ func _content():
   interactables=[{"position":Vector2(size.x/2,size.y-55),"kind":"return_region","payload":{}},{"position":Vector2(size.x/2,95),"kind":"save","payload":{}}]
   if map_id in ["brackenford","mosswick"]:
    interactables.append({"position":Vector2(250,250),"kind":"guild","payload":{"town":map_id}});interactables.append({"position":Vector2(size.x-250,250),"kind":"shop","payload":{"id":"equipment","name":title+" Outfitters"}});interactables.append({"position":Vector2(size.x/2,320),"kind":"inn","payload":{}});GameState.track("visit",map_id)
+   if map_id=="brackenford" and "brann" not in GameState.party:interactables.append({"position":Vector2(430,440),"kind":"recruit","payload":{"id":"brann","text":"Captain Brann lowers his shield. 'The road has grown teeth. From here, we walk it together.'"}})
+  elif map_id=="lumenport":
+   interactables.append({"position":Vector2(850,260),"kind":"guild","payload":{"town":"lumenport"}});interactables.append({"position":Vector2(350,430),"kind":"shop","payload":{"id":"general","name":"Seven Lamps Market"}});interactables.append({"position":Vector2(1320,430),"kind":"shop","payload":{"id":"equipment","name":"Lumenport Arsenal"}});interactables.append({"position":Vector2(600,820),"kind":"inn","payload":{}});if "lyra" not in GameState.party:interactables.append({"position":Vector2(1050,780),"kind":"recruit","payload":{"id":"lyra","text":"Lyra closes her tide-chart. 'The aqueduct is singing backward. I need allies who can hear danger without running from it.'"}});GameState.track("visit","lumenport")
+  elif map_id=="sunstep_abbey":interactables.append({"position":Vector2(475,250),"kind":"event","payload":{"id":"abbey_blessing","text":"The abbey's mirror pool reflects three lights though only two lamps burn."}});GameState.track("visit","sunstep_abbey")
+  elif map_id in ["tideglass_aqueduct","fallen_observatory"]:
+   var puzzle_id="aqueduct_gates" if map_id=="tideglass_aqueduct" else "observatory_lenses";interactables.append({"position":Vector2(size.x/2,300),"kind":"puzzle","payload":{"id":puzzle_id,"text":"The mechanism settles into alignment. A sealed route opens."}});interactables.append({"position":Vector2(size.x-180,160),"kind":"battle","payload":{"enemy":"stonewarden" if map_id=="tideglass_aqueduct" else "mire_hart"}})
   elif map_id=="echoing_grotto":for e in [["gloomwing",Vector2(220,230)],["stonejaw",Vector2(510,300)]]:interactables.append({"position":e[1],"kind":"battle","payload":{"enemy":e[0]}})
   elif map_id=="stillpick_mine":interactables.append({"position":Vector2(200,280),"kind":"event","payload":{"id":"scout_lio","text":"Scout Lio is bruised but alive. He points toward a grinding sound below."}});if "stonewarden" not in GameState.defeated_bosses:interactables.append({"position":Vector2(580,170),"kind":"battle","payload":{"enemy":"stonewarden"}})
   elif "mire_hart" not in GameState.defeated_bosses:interactables.append({"position":Vector2(350,180),"kind":"battle","payload":{"enemy":"mire_hart"}})
@@ -67,8 +77,10 @@ func _draw():
  if map_id=="region":
   draw_rect(Rect2(1130,0,260,1900),Color("c2a66a"));draw_rect(Rect2(0,600,420,80),Color("4389a1"));draw_rect(Rect2(2050,0,120,650),Color("4389a1"));draw_rect(Rect2(1180,700,240,620),Color("6b635c"));draw_circle(Vector2(350,900),95,Color("586a57"));draw_string(ThemeDB.fallback_font,Vector2(250,830),"THE GREAT STONE ARCH",0,300,17,Color("f0dbad"))
   for p in [Vector2(700,300),Vector2(350,500),Vector2(500,850),Vector2(1800,350),Vector2(2250,850),Vector2(900,1550)]:_tree(p)
-  _draw_location(Vector2(600,1450),"BRACKENFORD","town",Color("b96f4f"));_draw_location(Vector2(2180,1200),"MOSSWICK","town",Color("5c8995"));_draw_location(Vector2(400,1150),"ECHOING GROTTO","cave",Color("77717d"));_draw_location(Vector2(1500,1420),"STILLPICK MINE","mine",Color("89755e"));_draw_location(Vector2(2300,1580),"FLOODROOT HOLLOW","cave",Color("477f67"))
+  _draw_location(Vector2(600,1450),"BRACKENFORD","town",Color("b96f4f"));_draw_location(Vector2(2180,1200),"MOSSWICK","town",Color("5c8995"));_draw_location(Vector2(400,1150),"ECHOING GROTTO","cave",Color("77717d"));_draw_location(Vector2(1500,1420),"STILLPICK MINE","mine",Color("89755e"));_draw_location(Vector2(2300,1580),"FLOODROOT HOLLOW","cave",Color("477f67"));_draw_location(Vector2(2380,420),"LUMENPORT","town",Color("b08b56"));_draw_location(Vector2(1780,1710),"SUNSTEP ABBEY","town",Color("c69d6e"));_draw_location(Vector2(2060,720),"TIDEGLASS","mine",Color("4f95a0"));_draw_location(Vector2(900,1700),"OBSERVATORY","cave",Color("665f8c"))
  elif map_id in ["brackenford","mosswick"]:_draw_settlement()
+ elif map_id=="lumenport":_draw_city()
+ elif map_id=="sunstep_abbey":_draw_abbey()
  for it in interactables:
   if it.kind=="battle":_draw_enemy(it.position,it.payload.enemy)
   elif it.kind=="treasure":draw_rect(Rect2(it.position-Vector2(16,12),Vector2(32,24)),Color("9d612f"));draw_rect(Rect2(it.position-Vector2(13,9),Vector2(26,5)),Color("e3b651"))
@@ -93,4 +105,9 @@ func _draw_settlement():
  var buildings=[[Vector2(250,250),"WAYFARERS' GUILD",Color("4d7777")],[Vector2(size.x-250,250),"OUTFITTER",Color("b5764e")],[Vector2(size.x/2,320),"INN",Color("607f9b")],[Vector2(170,430),"HOME",Color("9a6b50")],[Vector2(size.x-180,430),"PROVISIONS",Color("7a8d57")],[Vector2(size.x/2,500),"FERRY OFFICE" if map_id=="mosswick" else "MINERS' HALL",Color("796783")]]
  for b in buildings:
   var p:Vector2=b[0];var c:Color=b[2];draw_rect(Rect2(p-Vector2(72,45),Vector2(144,90)),c);draw_colored_polygon(PackedVector2Array([p+Vector2(-82,-45),p+Vector2(0,-95),p+Vector2(82,-45)]),c.darkened(.25));draw_rect(Rect2(p+Vector2(-14,10),Vector2(28,35)),Color("4a352d"));draw_string(ThemeDB.fallback_font,p+Vector2(-65,65),b[1],0,145,13,Color("fff1cf"))
+func _draw_city():
+ draw_rect(Rect2(0,1000,1800,300),Color("3d8dab"));draw_rect(Rect2(820,150,160,850),Color("3d8dab"));for y in [330,680,920]:draw_rect(Rect2(760,y,280,70),Color("b99a63"))
+ var districts=[[Vector2(300,280),"LANTERN MARKET",Color("b97850")],[Vector2(850,260),"GRAND GUILD",Color("4b7778")],[Vector2(1400,280),"HIGH TEMPLE",Color("8a7195")],[Vector2(420,760),"RIVER INN",Color("587d99")],[Vector2(1200,760),"BEACON HALL",Color("9a8258")],[Vector2(1450,560),"ARSENAL",Color("7c6260")],[Vector2(250,570),"APOTHECARY",Color("6f8a5b")]]
+ for b in districts:var p:Vector2=b[0];var c:Color=b[2];draw_rect(Rect2(p-Vector2(105,65),Vector2(210,130)),c);draw_colored_polygon(PackedVector2Array([p+Vector2(-120,-65),p+Vector2(0,-125),p+Vector2(120,-65)]),c.darkened(.25));draw_rect(Rect2(p+Vector2(-18,15),Vector2(36,50)),Color("49342c"));draw_string(ThemeDB.fallback_font,p+Vector2(-95,90),b[1],0,200,15,Color("fff1cf"))
+func _draw_abbey():draw_circle(Vector2(475,350),150,Color("3d8dab"));draw_circle(Vector2(475,350),115,Color("8bc0bd"));draw_rect(Rect2(300,100,350,170),Color("c4a276"));draw_colored_polygon(PackedVector2Array([Vector2(280,100),Vector2(475,20),Vector2(670,100)]),Color("8e6f67"));draw_string(ThemeDB.fallback_font,Vector2(355,210),"MIRROR-POOL CHAPEL",0,300,17,Color("fff1cf"))
 
