@@ -21,7 +21,9 @@ func setup(id:String):
  elif id=="echoing_grotto":title="Echoing Grotto";size=Vector2(700,460)
  elif id=="stillpick_mine":title="Stillpick Mine";size=Vector2(760,520)
  else:title="Floodroot Hollow";size=Vector2(700,500)
-func _ready():queue_redraw();_walls();player=Player.new();add_child(player);player.position=Vector2(size.x/2,100 if map_id=="region" else size.y-80);_content()
+func _ready():queue_redraw();_walls();player=Player.new();add_child(player);player.position=Vector2(size.x/2,100 if map_id=="region" else size.y-80);_content();_add_minimap()
+func _add_minimap():
+ var layer=CanvasLayer.new();layer.layer=5;add_child(layer);var map=MapWidget.new();map.position=Vector2(478,10);map.size=Vector2(152,96);map.setup(map_id,player,size,true);layer.add_child(map)
 func _walls():
  for r in [Rect2(0,0,size.x,30),Rect2(0,0,30,size.y),Rect2(size.x-30,0,30,size.y),Rect2(0,size.y-30,size.x/2-60,30),Rect2(size.x/2+60,size.y-30,size.x/2-60,30)]:_wall(r)
  if map_id=="region":for r in [Rect2(0,600,420,80),Rect2(2050,0,120,650),Rect2(1180,700,240,620),Rect2(1550,1550,700,70)]:_wall(r)
@@ -65,10 +67,30 @@ func _draw():
  if map_id=="region":
   draw_rect(Rect2(1130,0,260,1900),Color("c2a66a"));draw_rect(Rect2(0,600,420,80),Color("4389a1"));draw_rect(Rect2(2050,0,120,650),Color("4389a1"));draw_rect(Rect2(1180,700,240,620),Color("6b635c"));draw_circle(Vector2(350,900),95,Color("586a57"));draw_string(ThemeDB.fallback_font,Vector2(250,830),"THE GREAT STONE ARCH",0,300,17,Color("f0dbad"))
   for p in [Vector2(700,300),Vector2(350,500),Vector2(500,850),Vector2(1800,350),Vector2(2250,850),Vector2(900,1550)]:_tree(p)
-  for loc in [[Vector2(600,1450),"BRACKENFORD"],[Vector2(2180,1200),"MOSSWICK"],[Vector2(400,1150),"GROTTO"],[Vector2(1500,1420),"STILLPICK"],[Vector2(2300,1580),"FLOODROOT"]]:draw_circle(loc[0],38,Color("b48254"));draw_string(ThemeDB.fallback_font,loc[0]+Vector2(-55,60),loc[1],0,130,14,Color("fff0c2"))
+  _draw_location(Vector2(600,1450),"BRACKENFORD","town",Color("b96f4f"));_draw_location(Vector2(2180,1200),"MOSSWICK","town",Color("5c8995"));_draw_location(Vector2(400,1150),"ECHOING GROTTO","cave",Color("77717d"));_draw_location(Vector2(1500,1420),"STILLPICK MINE","mine",Color("89755e"));_draw_location(Vector2(2300,1580),"FLOODROOT HOLLOW","cave",Color("477f67"))
+ elif map_id in ["brackenford","mosswick"]:_draw_settlement()
  for it in interactables:
-  if it.kind=="battle":var c=Color(EnemyDatabase.ENEMIES[it.payload.enemy].color);draw_circle(it.position,18,c);draw_circle(it.position+Vector2(0,-14),10,c.lightened(.2))
+  if it.kind=="battle":_draw_enemy(it.position,it.payload.enemy)
   elif it.kind=="treasure":draw_rect(Rect2(it.position-Vector2(16,12),Vector2(32,24)),Color("9d612f"));draw_rect(Rect2(it.position-Vector2(13,9),Vector2(26,5)),Color("e3b651"))
-  elif it.kind in ["guild","save"]:draw_circle(it.position,18,Color("82d9d0"))
+  elif it.kind=="save":draw_circle(it.position,18,Color("82d9d0"));draw_circle(it.position,9,Color.WHITE);draw_string(ThemeDB.fallback_font,it.position+Vector2(-35,34),"WAYLIGHT",0,90,12,Color.WHITE)
+  elif it.kind=="guild":draw_string(ThemeDB.fallback_font,it.position+Vector2(-40,42),"GUILD",0,100,13,Color("fff0c2"))
 func _tree(p):draw_circle(p,34,Color("356445"));draw_circle(p+Vector2(18,-12),27,Color("497d4e"));draw_rect(Rect2(p+Vector2(-5,22),Vector2(10,30)),Color("76513a"))
+func _draw_location(p:Vector2,label:String,kind:String,color:Color):
+ if kind=="town":
+  for o in [Vector2(-28,8),Vector2(0,-8),Vector2(28,10)]:draw_rect(Rect2(p+o-Vector2(14,10),Vector2(28,22)),color);draw_colored_polygon(PackedVector2Array([p+o+Vector2(-18,-10),p+o+Vector2(0,-25),p+o+Vector2(18,-10)]),color.darkened(.25))
+ else:draw_circle(p,34,color);draw_circle(p+Vector2(0,9),22,Color("171923"));if kind=="mine":draw_line(p+Vector2(-22,-18),p+Vector2(22,20),Color("d3b46c"),5)
+ draw_string(ThemeDB.fallback_font,p+Vector2(-72,58),label,0,160,14,Color("fff4cf"))
+func _draw_enemy(p:Vector2,id:String):
+ var e=EnemyDatabase.ENEMIES[id];var c=Color(e.color)
+ if id in ["gloomwing","lantern_moth"]:draw_colored_polygon(PackedVector2Array([p+Vector2(-25,0),p+Vector2(0,-15),p+Vector2(25,0),p+Vector2(0,14)]),c);draw_circle(p,9,c.lightened(.2))
+ elif id in ["briarback","mire_hart"]:draw_colored_polygon(PackedVector2Array([p+Vector2(-20,12),p+Vector2(-12,-14),p,p+Vector2(12,-14),p+Vector2(20,12)]),c);draw_line(p+Vector2(-8,-12),p+Vector2(-18,-28),c.lightened(.3),4);draw_line(p+Vector2(8,-12),p+Vector2(18,-28),c.lightened(.3),4)
+ elif id in ["roadshade","hollow_knight","stonewarden"]:draw_rect(Rect2(p-Vector2(13,19),Vector2(26,38)),c);draw_circle(p+Vector2(0,-22),10,c.lightened(.15))
+ else:draw_circle(p,19,c);draw_circle(p+Vector2(-8,-12),10,c.lightened(.15));draw_circle(p+Vector2(8,-12),10,c.lightened(.15))
+ draw_string(ThemeDB.fallback_font,p+Vector2(-55,38),e.name,0,120,12,Color.WHITE)
+func _draw_settlement():
+ var water_color=Color("438eaa");if map_id=="brackenford":draw_rect(Rect2(0,520,size.x,95),water_color);draw_rect(Rect2(430,500,240,135),Color("b9955f"))
+ else:draw_rect(Rect2(size.x-170,0,170,size.y),water_color);draw_circle(Vector2(size.x-170,420),120,water_color)
+ var buildings=[[Vector2(250,250),"WAYFARERS' GUILD",Color("4d7777")],[Vector2(size.x-250,250),"OUTFITTER",Color("b5764e")],[Vector2(size.x/2,320),"INN",Color("607f9b")],[Vector2(170,430),"HOME",Color("9a6b50")],[Vector2(size.x-180,430),"PROVISIONS",Color("7a8d57")],[Vector2(size.x/2,500),"FERRY OFFICE" if map_id=="mosswick" else "MINERS' HALL",Color("796783")]]
+ for b in buildings:
+  var p:Vector2=b[0];var c:Color=b[2];draw_rect(Rect2(p-Vector2(72,45),Vector2(144,90)),c);draw_colored_polygon(PackedVector2Array([p+Vector2(-82,-45),p+Vector2(0,-95),p+Vector2(82,-45)]),c.darkened(.25));draw_rect(Rect2(p+Vector2(-14,10),Vector2(28,35)),Color("4a352d"));draw_string(ThemeDB.fallback_font,p+Vector2(-65,65),b[1],0,145,13,Color("fff1cf"))
 
