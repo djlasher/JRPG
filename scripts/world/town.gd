@@ -17,6 +17,7 @@ const BUILDINGS=[
  {"id":"home4","name":"Bluebell Cottage","rect":Rect2(350,1010,190,145),"door":Vector2(445,1155),"color":"657f99"},
  {"id":"home5","name":"Gatekeeper's Home","rect":Rect2(1050,950,190,145),"door":Vector2(1145,1095),"color":"9b6754"},
  {"id":"library","name":"Larkspur Archive","rect":Rect2(720,760,250,180),"door":Vector2(845,940),"color":"6c7f58"}
+ ,{"id":"guild","name":"Wayfarers' Guild","rect":Rect2(1050,430,250,160),"door":Vector2(1175,590),"color":"476f73"}
 ]
 const NPC_DATA=[
  {"name":"Captain Brann","lines":["The east road stays quiet, but quiet roads deserve the sharpest watch.","Larkspur was built around the old beacon. We still light it when travelers vanish in the mist."],"color":"365f78","route":[[760,1040],[760,650],[720,460]],"speed":48},
@@ -63,3 +64,4 @@ func _draw():
 func _draw_building(b):
  var r:Rect2=b.rect; draw_rect(r,Color(b.color)); draw_polygon(PackedVector2Array([r.position+Vector2(-14,20),r.position+Vector2(r.size.x/2,-55),r.position+Vector2(r.size.x+14,20)]),PackedColorArray([Color(b.color).darkened(.32)])); draw_rect(Rect2(b.door-Vector2(17,45),Vector2(34,45)),Color("4b382f")); draw_rect(Rect2(r.position+Vector2(30,70),Vector2(42,35)),Color("9ed6d2")); draw_rect(Rect2(r.end-Vector2(72,r.size.y-70),Vector2(42,35)),Color("9ed6d2")); draw_string(ThemeDB.fallback_font,r.position+Vector2(16,135),b.name,HORIZONTAL_ALIGNMENT_LEFT,r.size.x-32,14,Color("fff1d0"))
 func _draw_tree(p): draw_circle(p+Vector2(0,10),24,Color("315f43")); draw_circle(p+Vector2(-14,-4),20,Color("477c4c")); draw_circle(p+Vector2(14,-5),20,Color("4f8b52")); draw_rect(Rect2(p+Vector2(-5,18),Vector2(10,25)),Color("76523b"))
+
