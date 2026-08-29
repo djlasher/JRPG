@@ -51,3 +51,12 @@ Waylights write versioned JSON to `user://larkspur_save.json`. Version 2 records
 
 See `docs/day_2_report.md` for the content inventory, validation notes, and recommended playtest route.
 
+## Seven Lamps chapter additions
+
+- Recruitable party: Ari, shield captain Brann, and tide scholar Lyra Vale
+- Lumenport major city, Sunstep Abbey, Tideglass Aqueduct, and Fallen Observatory
+- Party status, bestiary, accurate per-area maps, live minimap, and Waylight fast travel
+- Save version 3 persists party, bestiary, discoveries, fast travel, puzzles, and guild reputation while migrating versions 1–2
+
+See `docs/day_3_report.md` for stabilization details and the current chapter limitations.
+
