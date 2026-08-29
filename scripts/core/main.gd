@@ -103,8 +103,22 @@ func _battle_done(victory:bool,enemy:String):
  if victory and world is AdventureMap:world.remove_near("battle")
  if world:world.player.enabled=true
 func _open_treasure(payload:Dictionary):
- if payload.id in GameState.opened_treasures:_unlock();return
- GameState.opened_treasures.append(payload.id);GameState.add_item(payload.item,int(payload.count));GameState.track("interact",payload.id);if world is AdventureMap:world.remove_near("treasure");ui.feedback("Treasure found: %s ×%d"%[GameState.ITEMS[payload.item].name,payload.count]);ui.dialogue_closed.connect(_unlock,CONNECT_ONE_SHOT)
+ if payload.id in GameState.opened_treasures:
+  _unlock()
+  return
+ GameState.opened_treasures.append(payload.id)
+ var message=""
+ if payload.id in ["satchel_chest","arch_keepsake"]:
+  GameState.add_item(payload.item,int(payload.count))
+  message="Treasure found: %s ×%d"%[GameState.ITEMS[payload.item].name,payload.count]
+ else:
+  var tier=2 if "mine" in payload.id or "hollow" in payload.id else 1
+  var gear=GameState.roll_chest(payload.id,tier)
+  message="%s %s\nGear Rating %d — %s\n%s"%[ProgressionDatabase.RARITIES[gear.rarity].name,gear.name,gear.rating,gear.slot,gear.description]
+ GameState.track("interact",payload.id)
+ if world is AdventureMap:world.remove_near("treasure")
+ ui.feedback(message)
+ ui.dialogue_closed.connect(_unlock,CONNECT_ONE_SHOT)
 func _world_event(payload:Dictionary):
  if payload.id not in GameState.world_events:GameState.world_events.append(payload.id);GameState.track("visit",payload.get("target",payload.id));GameState.track("interact",payload.get("target",payload.id))
  ui.feedback(payload.text);ui.dialogue_closed.connect(_unlock,CONNECT_ONE_SHOT)
