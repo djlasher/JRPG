@@ -123,7 +123,14 @@ func _quest_action(id:String,town:String):
  else:body.text="Progress: %d/%d"%[GameState.quests[id].progress,GameState.QUESTS[id].count]
 func _unhandled_input(event):
  if not panel: return
- if mode=="dialogue" and (event.is_action_pressed("confirm") or event.is_action_pressed("interact")):
+ if mode=="pause" and event.is_action_pressed("pause"):
+  _close()
+  get_viewport().set_input_as_handled()
+ elif mode=="pause" and event.is_action_pressed("cancel"):
+  if title and title.text=="Travel Journal":_close()
+  else:pause_menu()
+  get_viewport().set_input_as_handled()
+ elif mode=="dialogue" and (event.is_action_pressed("confirm") or event.is_action_pressed("interact")):
   page+=1
   if page<pages.size(): body.text=pages[page]
   else: _close()
@@ -132,3 +139,4 @@ func _close():
  var actor=panel.get_meta("actor",null) if panel else null; if actor: actor.talking=false
  if mode=="pause": get_tree().paused=false
  clear(); dialogue_closed.emit()
+
