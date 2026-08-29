@@ -128,10 +128,10 @@ func _draw_location(p:Vector2,label:String,kind:String,color:Color):
  if kind=="town":
   for o in [Vector2(-28,8),Vector2(0,-8),Vector2(28,10)]:draw_rect(Rect2(p+o-Vector2(14,10),Vector2(28,22)),color);draw_colored_polygon(PackedVector2Array([p+o+Vector2(-18,-10),p+o+Vector2(0,-25),p+o+Vector2(18,-10)]),color.darkened(.25))
  else:draw_circle(p,34,color);draw_circle(p+Vector2(0,9),22,Color("171923"));if kind=="mine":draw_line(p+Vector2(-22,-18),p+Vector2(22,20),Color("d3b46c"),5)
- draw_string(ThemeDB.fallback_font,p+Vector2(-72,58),label,0,160,14,Color("fff4cf"))
+ draw_colored_polygon(PackedVector2Array([p+Vector2(-13,35),p+Vector2(13,35),p+Vector2(0,49)]),Color("fff0a8"));draw_string(ThemeDB.fallback_font,p+Vector2(-72,66),label+" — ENTER",0,180,14,Color("fff4cf"))
 func _draw_enemy(p:Vector2,id:String):
- var e=EnemyDatabase.ENEMIES[id];var source=VisualAssets.MONSTERS.get(id,VisualAssets.MONSTERS.mossling)
- draw_texture_rect_region(VisualAssets.ATLAS,Rect2(p-Vector2(28,34),Vector2(56,68)),source)
+ var e=EnemyDatabase.ENEMIES[id];var source=PixelAssets.enemy_region(id)
+ draw_texture_rect_region(PixelAssets.ATLAS,Rect2(p-Vector2(28,34),Vector2(56,68)),source)
  draw_string(ThemeDB.fallback_font,p+Vector2(-55,38),e.name,0,120,12,Color.WHITE)
 func _draw_settlement():
  var water_color=Color("438eaa");if map_id=="brackenford":draw_rect(Rect2(0,520,size.x,95),water_color);draw_rect(Rect2(430,500,240,135),Color("b9955f"))
