@@ -54,10 +54,7 @@ func try_interact():
   var d=probe.distance_to(it.position); if d<best and d<48: best=d; chosen=it
  if not chosen.is_empty(): interaction_requested.emit(chosen.kind,chosen.payload)
 func _draw():
- for x in range(0,1600,40):for y in range(0,1200,40):draw_texture_rect_region(PixelAssets.ATLAS,Rect2(x,y,40,40),PixelAssets.TILES.grass)
- for y in range(0,1200,40):for x in range(620,920,40):draw_texture_rect_region(PixelAssets.ATLAS,Rect2(x,y,40,40),PixelAssets.TILES.dirt)
- for y in range(420,660,40):for x in range(0,1600,40):draw_texture_rect_region(PixelAssets.ATLAS,Rect2(x,y,40,40),PixelAssets.TILES.dirt)
- for x in range(1400,1545,40):for y in range(300,560,40):draw_texture_rect_region(PixelAssets.ATLAS,Rect2(x,y,40,40),PixelAssets.TILES.water)
+ draw_rect(Rect2(Vector2.ZERO,SIZE),Color("79a85b"));draw_rect(Rect2(620,0,300,1200),Color("c7a96a"));draw_rect(Rect2(0,420,1600,240),Color("c7a96a"));draw_rect(Rect2(1400,300,145,260),Color("3f88a2"))
  for x in range(0,1600,32): for y in range(0,1200,32): if (x+y)%96==0: draw_circle(Vector2(x+12,y+18),2,Color("d7d06a"))
  for b in BUILDINGS: _draw_building(b)
  for p in [Vector2(85,390),Vector2(145,440),Vector2(1450,920),Vector2(980,1080),Vector2(1020,600)]: _draw_tree(p)
