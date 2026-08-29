@@ -73,5 +73,26 @@ func gain_rewards(exp:int,money:int)->Array[String]:
  state_changed.emit();return notes
 func serialize()->Dictionary:return {"version":2,"hero":HERO_NAME,"crowns":crowns,"inventory":inventory,"equipment":equipment,"location":current_location,"position":[player_position.x,player_position.y],"play_seconds":play_seconds,"flags":flags,"quests":quests,"opened_treasures":opened_treasures,"defeated_bosses":defeated_bosses,"world_events":world_events,"level":level,"experience":experience,"hp":hp,"mp":mp,"base_stats":base_stats}
 func restore(d:Dictionary):
- crowns=int(d.get("crowns",140));inventory=d.get("inventory",{});equipment=d.get("equipment",{"Weapon":"","Armor":"","Accessory":""});current_location=str(d.get("location","Larkspur"));var p=d.get("position",[730,850]);player_position=Vector2(float(p[0]),float(p[1]));play_seconds=float(d.get("play_seconds",0));flags=d.get("flags",{});quests=d.get("quests",{});opened_treasures=Array(d.get("opened_treasures",[]),TYPE_STRING,"",null);defeated_bosses=Array(d.get("defeated_bosses",[]),TYPE_STRING,"",null);world_events=Array(d.get("world_events",[]),TYPE_STRING,"",null);level=int(d.get("level",1));experience=int(d.get("experience",0));base_stats=d.get("base_stats",base_stats);hp=int(d.get("hp",stat("max_hp")));mp=int(d.get("mp",stat("max_mp")));state_changed.emit()
+ crowns=int(d.get("crowns",140))
+ inventory=d.get("inventory",{})
+ equipment=d.get("equipment",{"Weapon":"","Armor":"","Accessory":""})
+ current_location=str(d.get("location","Larkspur"))
+ var saved_position=d.get("position",[730,850])
+ player_position=Vector2(float(saved_position[0]),float(saved_position[1]))
+ play_seconds=float(d.get("play_seconds",0))
+ flags=d.get("flags",{})
+ quests=d.get("quests",{})
+ opened_treasures.clear()
+ for treasure_id in d.get("opened_treasures",[]):opened_treasures.append(str(treasure_id))
+ defeated_bosses.clear()
+ for boss_id in d.get("defeated_bosses",[]):defeated_bosses.append(str(boss_id))
+ world_events.clear()
+ for event_id in d.get("world_events",[]):world_events.append(str(event_id))
+ level=int(d.get("level",1))
+ experience=int(d.get("experience",0))
+ var saved_stats=d.get("base_stats",{})
+ for key in saved_stats:base_stats[key]=int(saved_stats[key])
+ hp=int(d.get("hp",stat("max_hp")))
+ mp=int(d.get("mp",stat("max_mp")))
+ state_changed.emit()
 
