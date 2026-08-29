@@ -69,9 +69,14 @@ var vehicles:Dictionary={"ground":false,"boat":false,"aircraft":false,"spacecraf
 var ship:Dictionary={"name":"Waylight Comet","hull":180,"max_hull":180,"shields":70,"max_shields":70,"energy":60,"weapons":22,"armor":9,"speed":12,"upgrades":[]}
 var known_planets:Array[String]=[]
 var story_branches:Dictionary={}
+var lattice_points:Dictionary={"ari":3}
+var lattice_active:Dictionary={"ari":["lattice_000"]}
+var generated_items:Dictionary={}
+var chest_rolls:Dictionary={}
 func _process(delta):play_seconds+=delta
 func reset():
  crowns=140;inventory={"sunleaf_tonic":2,"clearwater_salt":1,"reed_sword":1,"wayfarer_vest":1};equipment={"Weapon":"reed_sword","Armor":"wayfarer_vest","Accessory":""};current_location="Larkspur";player_position=Vector2(730,850);play_seconds=0;flags={};quests={};opened_treasures=[];defeated_bosses=[];world_events=[];level=1;experience=0;base_stats={"max_hp":85,"max_mp":22,"attack":12,"defense":8,"magic":10,"resistance":7,"speed":10};hp=85;mp=22;party=["ari"];party_state={"ari":{"level":1,"hp":85,"mp":22,"max_hp":85,"max_mp":22,"attack":16,"defense":11,"magic":10,"speed":10}};bestiary={};discovered_locations=["town"];fast_travel=["town"];puzzle_states={};guild_reputation=0;job_state={"ari":{"current":"pathguard","levels":{"pathguard":1},"jp":{"pathguard":0},"learned":["lantern_cut"],"equipped":[]}};unlocked_jobs=["pathguard","flame_scholar","way_mender","reed_ranger","lantern_rogue","stone_monk","tide_engineer","star_priest"];relationships={"ari:brann":{"points":0,"romance":false,"adult":true},"ari:lyra":{"points":0,"romance":false,"adult":true},"brann:lyra":{"points":0,"romance":false,"adult":true}};relationship_events=[];vehicles={"ground":false,"boat":false,"aircraft":false,"spacecraft":false,"current":"foot"};ship={"name":"Waylight Comet","hull":180,"max_hull":180,"shields":70,"max_shields":70,"energy":60,"weapons":22,"armor":9,"speed":12,"upgrades":[]};known_planets=[];story_branches={};state_changed.emit()
+ lattice_points={"ari":3};lattice_active={"ari":["lattice_000"]};generated_items={};chest_rolls={};equipment={"Weapon":"reed_sword","Head":"","Body":"wayfarer_vest","Hands":"","Feet":"","Accessory1":"","Accessory2":""}
 func recruit(id:String):
  if id not in PARTY_DEFS or id in party:return
  party.append(id)
@@ -106,8 +111,32 @@ func stat(key:String)->int:
  if job_state.has("ari"):
   var job_id=str(job_state.ari.current);value=int(round(value*float(JOBS.get(job_id,{"mods":{}}).mods.get(key,1.0))))
  for id in equipment.values():
-  if id!="":value+=int(ITEMS.get(id,{}).get(key,0))
+  if id!="":value+=int(item_data(id).get(key,item_data(id).get("stats",{}).get(key,0)))
+ var nodes=ProgressionDatabase.build_grid()
+ for node_id in lattice_active.get("ari",[]):if nodes.has(node_id) and nodes[node_id].type=="stat" and nodes[node_id].stat==key:value+=int(nodes[node_id].value)
  return value
+func item_data(id:String)->Dictionary:return generated_items.get(id,ITEMS.get(id,{}))
+func activate_lattice(character:String,node_id:String)->bool:
+ var nodes=ProgressionDatabase.build_grid()
+ if not nodes.has(node_id) or node_id in lattice_active.get(character,[]):return false
+ var adjacent=false
+ for active_id in lattice_active.get(character,[]):
+  if node_id in nodes[active_id].links:adjacent=true
+ var cost=int(nodes[node_id].cost)
+ if not adjacent or int(lattice_points.get(character,0))<cost:return false
+ lattice_points[character]-=cost
+ lattice_active[character].append(node_id)
+ if nodes[node_id].spell!="" and nodes[node_id].spell not in job_state[character].learned:
+  job_state[character].learned.append(nodes[node_id].spell)
+ state_changed.emit()
+ return true
+func roll_chest(chest_id:String,tier:=1)->Dictionary:
+ if chest_rolls.has(chest_id):return generated_items[chest_rolls[chest_id]]
+ var item=ProgressionDatabase.generate_loot(chest_id,tier);generated_items[item.instance_id]=item;inventory[item.instance_id]=1;chest_rolls[chest_id]=item.instance_id;state_changed.emit();return item
+func equip_instance(id:String)->bool:
+ var data=item_data(id);var slot=str(data.get("slot",data.get("type","")));if slot=="Armor":slot="Body";if slot=="Accessory":slot="Accessory1"
+ if slot not in equipment:return false
+ equipment[slot]=id;state_changed.emit();return true
 func buy(id:String,price:int)->bool:
  if crowns<price:return false
  crowns-=price;inventory[id]=inventory.get(id,0)+1;state_changed.emit();return true
@@ -135,7 +164,7 @@ func gain_rewards(exp:int,money:int)->Array[String]:
  while experience>=level*60:
   experience-=level*60;level+=1;base_stats.max_hp+=12;base_stats.max_mp+=4;base_stats.attack+=3;base_stats.defense+=2;base_stats.magic+=2;base_stats.resistance+=2;base_stats.speed+=1;hp=stat("max_hp");mp=stat("max_mp");notes.append("Ari reached level %d!"%level)
  state_changed.emit();return notes
-func serialize()->Dictionary:return {"version":4,"hero":HERO_NAME,"crowns":crowns,"inventory":inventory,"equipment":equipment,"location":current_location,"position":[player_position.x,player_position.y],"play_seconds":play_seconds,"flags":flags,"quests":quests,"opened_treasures":opened_treasures,"defeated_bosses":defeated_bosses,"world_events":world_events,"level":level,"experience":experience,"hp":hp,"mp":mp,"base_stats":base_stats,"party":party,"party_state":party_state,"bestiary":bestiary,"discovered_locations":discovered_locations,"fast_travel":fast_travel,"puzzle_states":puzzle_states,"guild_reputation":guild_reputation,"job_state":job_state,"unlocked_jobs":unlocked_jobs,"relationships":relationships,"relationship_events":relationship_events,"vehicles":vehicles,"ship":ship,"known_planets":known_planets,"story_branches":story_branches}
+func serialize()->Dictionary:return {"version":5,"hero":HERO_NAME,"crowns":crowns,"inventory":inventory,"equipment":equipment,"location":current_location,"position":[player_position.x,player_position.y],"play_seconds":play_seconds,"flags":flags,"quests":quests,"opened_treasures":opened_treasures,"defeated_bosses":defeated_bosses,"world_events":world_events,"level":level,"experience":experience,"hp":hp,"mp":mp,"base_stats":base_stats,"party":party,"party_state":party_state,"bestiary":bestiary,"discovered_locations":discovered_locations,"fast_travel":fast_travel,"puzzle_states":puzzle_states,"guild_reputation":guild_reputation,"job_state":job_state,"unlocked_jobs":unlocked_jobs,"relationships":relationships,"relationship_events":relationship_events,"vehicles":vehicles,"ship":ship,"known_planets":known_planets,"story_branches":story_branches,"lattice_points":lattice_points,"lattice_active":lattice_active,"generated_items":generated_items,"chest_rolls":chest_rolls}
 func restore(d:Dictionary):
  crowns=int(d.get("crowns",140))
  inventory=d.get("inventory",{})
@@ -169,5 +198,6 @@ func restore(d:Dictionary):
  puzzle_states=d.get("puzzle_states",{})
  guild_reputation=int(d.get("guild_reputation",0))
  job_state=d.get("job_state",job_state);unlocked_jobs.clear();for saved_job_id in d.get("unlocked_jobs",["pathguard","flame_scholar","way_mender","reed_ranger","lantern_rogue","stone_monk","tide_engineer","star_priest"]):unlocked_jobs.append(str(saved_job_id));relationships=d.get("relationships",relationships);relationship_events.clear();for relationship_event_id in d.get("relationship_events",[]):relationship_events.append(str(relationship_event_id));vehicles=d.get("vehicles",vehicles);ship=d.get("ship",ship);known_planets.clear();for planet_id in d.get("known_planets",[]):known_planets.append(str(planet_id));story_branches=d.get("story_branches",{})
+ lattice_points=d.get("lattice_points",{"ari":3});lattice_active=d.get("lattice_active",{"ari":["lattice_000"]});generated_items=d.get("generated_items",{});chest_rolls=d.get("chest_rolls",{});var migrated={"Weapon":equipment.get("Weapon",""),"Head":equipment.get("Head",""),"Body":equipment.get("Body",equipment.get("Armor","")),"Hands":equipment.get("Hands",""),"Feet":equipment.get("Feet",""),"Accessory1":equipment.get("Accessory1",equipment.get("Accessory","")),"Accessory2":equipment.get("Accessory2","")};equipment=migrated
  state_changed.emit()
 
