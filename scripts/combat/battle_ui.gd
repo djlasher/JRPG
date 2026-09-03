@@ -6,7 +6,7 @@ var enemy_id:String
 var panel:PanelContainer
 var info:RichTextLabel
 var commands:GridContainer
-var portraits:Array[TextureRect]=[]
+var portraits:Array[Control]=[]
 var damage_flash:ColorRect
 var defending:=false
 var locked:=false
@@ -19,7 +19,7 @@ func _ready():
 func _build():
  var bg=ColorRect.new();bg.color=Color("101522");bg.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT);add_child(bg)
  var portrait_row=HBoxContainer.new();portrait_row.position=Vector2(80,8);portrait_row.size=Vector2(480,166);portrait_row.alignment=BoxContainer.ALIGNMENT_CENTER;portrait_row.add_theme_constant_override("separation",18);add_child(portrait_row)
- for enemy in enemies:var portrait=TextureRect.new();portrait.texture=VisualAssets.icon_for_enemy(enemy.id);portrait.material=VisualAssets.background_key_material();portrait.custom_minimum_size=Vector2(125,160);portrait.expand_mode=TextureRect.EXPAND_IGNORE_SIZE;portrait.stretch_mode=TextureRect.STRETCH_KEEP_ASPECT_CENTERED;portrait.texture_filter=CanvasItem.TEXTURE_FILTER_LINEAR;portrait.tooltip_text=enemy.name;portrait_row.add_child(portrait);portraits.append(portrait)
+ for enemy in enemies:var portrait=EnemyPortrait.new();portrait.setup(enemy.id,Color(enemy.color));portrait.tooltip_text=enemy.name;portrait_row.add_child(portrait);portraits.append(portrait)
  panel=PanelContainer.new();panel.position=Vector2(20,178);panel.size=Vector2(600,172);add_child(panel);var row=HBoxContainer.new();panel.add_child(row);info=RichTextLabel.new();info.bbcode_enabled=true;info.custom_minimum_size=Vector2(392,154);row.add_child(info);commands=GridContainer.new();commands.columns=2;commands.custom_minimum_size=Vector2(185,154);row.add_child(commands)
  damage_flash=ColorRect.new();damage_flash.color=Color(0.75,0.02,0.02,0);damage_flash.mouse_filter=Control.MOUSE_FILTER_IGNORE;damage_flash.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT);add_child(damage_flash)
 func _button(label:String,callback:Callable,icon:Texture2D=null):
