@@ -5,13 +5,14 @@ const HERO_NAME:="Ari"
 const ITEMS={
 "sunleaf_tonic":{"name":"Sunleaf Tonic","description":"Restores 35 HP.","type":"Consumable","price":18,"hp":35},"clearwater_salt":{"name":"Clearwater Salt","description":"Restores 12 MP.","type":"Consumable","price":12,"mp":12},
 "reed_sword":{"name":"Reedsteel Sword","description":"A balanced Larkspur blade.","type":"Weapon","price":90,"attack":4},"ash_staff":{"name":"Ashwood Staff","description":"A brass-capped channeling staff.","type":"Weapon","price":76,"magic":4},"wayfarer_vest":{"name":"Wayfarer Vest","description":"Light road armor.","type":"Armor","price":68,"defense":3},"lantern_charm":{"name":"Lantern Charm","description":"Blue glass steadies its bearer.","type":"Accessory","price":54,"resistance":2,"max_mp":4},
-"marsh_blade":{"name":"Marshglass Blade","description":"A keen green sword from Brackenford.","type":"Weapon","price":180,"attack":8},"quarry_mail":{"name":"Quarry Mail","description":"Layered slate-ring protection.","type":"Armor","price":165,"defense":7},"wind_knot":{"name":"Wind-knot Brooch","description":"Rare silver and skyglass.","type":"Accessory","price":240,"speed":5},"moon_moss":{"name":"Moon Moss","description":"Pale moss sought by healers.","type":"Quest","price":0},"guild_seal":{"name":"Wayfarers' Seal","description":"Proof of guild service.","type":"Key","price":0}}
+"marsh_blade":{"name":"Marshglass Blade","description":"A keen green sword from Brackenford.","type":"Weapon","price":180,"attack":8},"quarry_mail":{"name":"Quarry Mail","description":"Layered slate-ring protection.","type":"Armor","price":165,"defense":7},"wind_knot":{"name":"Wind-knot Brooch","description":"Rare silver and skyglass.","type":"Accessory","price":240,"speed":5},"moon_moss":{"name":"Moon Moss","description":"Pale moss sought by healers.","type":"Quest","price":0},"guild_seal":{"name":"Wayfarers' Seal","description":"Proof of guild service.","type":"Key","price":0},
+"field_bread":{"name":"Field Bread","description":"Restores 18 HP. Cheap road food.","type":"Consumable","price":6,"hp":18,"level":1},"reed_cap":{"name":"Reedweave Cap","description":"Simple protection for a first journey.","type":"Head","slot":"Head","price":28,"defense":1,"rating":6,"level":1},"padded_gloves":{"name":"Padded Gloves","description":"Firm grip and modest protection.","type":"Hands","slot":"Hands","price":32,"attack":1,"rating":7,"level":1},"road_boots":{"name":"Road Boots","description":"Made for Lanternvale's muddy paths.","type":"Feet","slot":"Feet","price":35,"speed":1,"rating":7,"level":1},"copper_charm":{"name":"Copper Waylight Charm","description":"A beginner's ward against road magic.","type":"Accessory","slot":"Accessory1","price":42,"resistance":2,"rating":8,"level":1}}
 const SKILLS={"lantern_cut":{"name":"Lantern Cut","description":"A forceful arc of steel.","cost":4,"power":1.6,"kind":"damage"},"ember_spark":{"name":"Ember Spark","description":"A mote of guiding flame.","cost":6,"power":1.8,"kind":"magic"},"waylight_mend":{"name":"Waylight Mend","description":"Restore 45 HP.","cost":7,"power":45,"kind":"heal"}}
 const QUESTS={
 "first_road":{"name":"Beyond the South Lantern","description":"Reach Brackenford and report to Warden Elowen.","giver":"Captain Brann","type":"visit","target":"brackenford","count":1,"reward":{"crowns":80,"item":"guild_seal"},"category":"Main"},
 "lost_satchel":{"name":"Pears by the Wayside","description":"Recover Nessa's satchel from a regional chest.","giver":"Nessa","type":"interact","target":"satchel_chest","count":1,"reward":{"crowns":45,"item":"sunleaf_tonic"},"category":"Side"},
-"thorn_problem":{"name":"Thorns at Highmeadow","description":"Defeat 3 Briarbacks near the farms.","giver":"Farmer Rell","type":"defeat_specific","target":"briarback","count":3,"reward":{"crowns":75,"item":"wayfarer_vest"},"category":"Guild"},
-"cave_wings":{"name":"Wings Below","description":"Defeat 4 Gloomwings in Echoing Grotto.","giver":"Larkspur Board","type":"defeat_specific","target":"gloomwing","count":4,"reward":{"crowns":90,"item":"clearwater_salt"},"category":"Guild"},
+"thorn_problem":{"name":"Thorns at Highmeadow","description":"Clear 3 Thorn Slimes from Highmeadow's irrigation beds.","giver":"Farmer Rell","type":"defeat_specific","target":"briarback","count":3,"reward":{"crowns":75,"item":"wayfarer_vest"},"category":"Guild"},
+"cave_wings":{"name":"Wings Below","description":"Drive 4 Cave Bats from Echoing Grotto before they reach the grain stores.","giver":"Larkspur Board","type":"defeat_specific","target":"gloomwing","count":4,"reward":{"crowns":90,"item":"clearwater_salt"},"category":"Guild"},
 "medicine_run":{"name":"A Bottle Before Sundown","description":"Reach the injured traveler by the west bridge.","giver":"Sister Alia","type":"visit","target":"injured_traveler","count":1,"reward":{"crowns":55},"category":"Side"},
 "mine_silence":{"name":"The Silent Pick","description":"Defeat the Stonewarden in Stillpick Mine.","giver":"Foreman Dena","type":"defeat_specific","target":"stonewarden","count":1,"reward":{"crowns":180,"item":"quarry_mail"},"category":"Main"},
 "moon_moss":{"name":"Light in the Moss","description":"Collect 3 clumps of Moon Moss.","giver":"Herbalist Ossa","type":"collect","target":"moon_moss","count":3,"reward":{"crowns":100,"item":"lantern_charm"},"category":"Side"},
@@ -19,7 +20,13 @@ const QUESTS={
 "ruin_lights":{"name":"Lanterns Without Hands","description":"Examine 3 ghost lights at Glassmere Ruins.","giver":"Scholar Pell","type":"interact","target":"ghost_light","count":3,"reward":{"crowns":95},"category":"Side"},
 "lake_beast":{"name":"Teeth Beneath Still Water","description":"Defeat the Mire-Crowned Hart.","giver":"Mosswick Board","type":"defeat_specific","target":"mire_hart","count":1,"reward":{"crowns":260,"item":"wind_knot"},"category":"Guild"},
 "missing_scout":{"name":"The Unreturned Scout","description":"Find scout Lio in Stillpick Mine.","giver":"Brackenford Board","type":"visit","target":"scout_lio","count":1,"reward":{"crowns":110},"category":"Guild"},
-"old_arch":{"name":"Under the Stone Arch","description":"Find Pip's keepsake beneath the giant arch.","giver":"Pip","type":"interact","target":"arch_keepsake","count":1,"reward":{"crowns":40,"item":"wind_knot"},"category":"Side"}}
+"old_arch":{"name":"Under the Stone Arch","description":"Find Pip's keepsake beneath the giant arch.","giver":"Pip","type":"interact","target":"arch_keepsake","count":1,"reward":{"crowns":40,"item":"wind_knot"},"category":"Side"},
+"slime_samples":{"name":"A Scholar's Slime Samples","description":"Defeat 3 Green Slimes on the safe road.","giver":"Archivist Vale","type":"defeat_specific","target":"mossling","count":3,"reward":{"crowns":36,"item":"field_bread"},"category":"Side"},
+"thorn_jelly":{"name":"Jelly in the Furrows","description":"Clear 2 Thorn Slimes near Highmeadow.","giver":"Farmer Rell","type":"defeat_specific","target":"briarback","count":2,"reward":{"crowns":42,"item":"padded_gloves"},"category":"Side"},
+"first_camp":{"name":"Tea at the Ferry Camp","description":"Find the hidden ferry camp east of the river road.","giver":"Maeve","type":"interact","target":"ferry_camp","count":1,"reward":{"crowns":30,"item":"clearwater_salt"},"category":"Rumor"},
+"singing_stone_job":{"name":"The Note Beneath Stone","description":"Examine the singing standing stone.","giver":"Sister Alia","type":"interact","target":"singing_stone","count":1,"reward":{"crowns":35},"category":"Rumor"},
+"bat_wings":{"name":"Soft Wings, Dark Tunnel","description":"Defeat 2 Cave Bats in Echoing Grotto.","giver":"Pip","type":"defeat_specific","target":"gloomwing","count":2,"reward":{"crowns":48,"item":"road_boots"},"category":"Guild"},
+"broken_wheel":{"name":"The Patient Wagon","description":"Inspect the broken wagon beside the central road.","giver":"Orin","type":"interact","target":"broken_wagon","count":1,"reward":{"crowns":28,"item":"field_bread"},"category":"Side"}}
 var crowns:=140
 var inventory:Dictionary={"sunleaf_tonic":2,"clearwater_salt":1,"reed_sword":1,"wayfarer_vest":1}
 var equipment:Dictionary={"Weapon":"reed_sword","Armor":"wayfarer_vest","Accessory":""}
@@ -73,10 +80,13 @@ var lattice_points:Dictionary={"ari":3}
 var lattice_active:Dictionary={"ari":["lattice_000"]}
 var generated_items:Dictionary={}
 var chest_rolls:Dictionary={}
+var tracked_quest:=""
+var minigame_best:=0
 func _process(delta):play_seconds+=delta
 func reset():
  crowns=140;inventory={"sunleaf_tonic":2,"clearwater_salt":1,"reed_sword":1,"wayfarer_vest":1};equipment={"Weapon":"reed_sword","Armor":"wayfarer_vest","Accessory":""};current_location="Larkspur";player_position=Vector2(730,850);play_seconds=0;flags={};quests={};opened_treasures=[];defeated_bosses=[];world_events=[];level=1;experience=0;base_stats={"max_hp":85,"max_mp":22,"attack":12,"defense":8,"magic":10,"resistance":7,"speed":10};hp=85;mp=22;party=["ari"];party_state={"ari":{"level":1,"hp":85,"mp":22,"max_hp":85,"max_mp":22,"attack":16,"defense":11,"magic":10,"speed":10}};bestiary={};discovered_locations=["town"];fast_travel=["town"];puzzle_states={};guild_reputation=0;job_state={"ari":{"current":"pathguard","levels":{"pathguard":1},"jp":{"pathguard":0},"learned":["lantern_cut"],"equipped":[]}};unlocked_jobs=["pathguard","flame_scholar","way_mender","reed_ranger","lantern_rogue","stone_monk","tide_engineer","star_priest"];relationships={"ari:brann":{"points":0,"romance":false,"adult":true},"ari:lyra":{"points":0,"romance":false,"adult":true},"brann:lyra":{"points":0,"romance":false,"adult":true}};relationship_events=[];vehicles={"ground":false,"boat":false,"aircraft":false,"spacecraft":false,"current":"foot"};ship={"name":"Waylight Comet","hull":180,"max_hull":180,"shields":70,"max_shields":70,"energy":60,"weapons":22,"armor":9,"speed":12,"upgrades":[]};known_planets=[];story_branches={};state_changed.emit()
- lattice_points={"ari":3};lattice_active={"ari":["lattice_000"]};generated_items={};chest_rolls={};equipment={"Weapon":"reed_sword","Head":"","Body":"wayfarer_vest","Hands":"","Feet":"","Accessory1":"","Accessory2":""}
+ lattice_points={"ari":3};lattice_active={"ari":["lattice_000"]};generated_items={};chest_rolls={};equipment={"Weapon":"reed_sword","Head":"","Body":"wayfarer_vest","Hands":"","Feet":"","Accessory1":"","Accessory2":""};quests["first_road"]={"status":"Active","progress":0};tracked_quest="first_road"
+ tracked_quest="";minigame_best=0
 func recruit(id:String):
  if id not in PARTY_DEFS or id in party:return
  party.append(id)
@@ -146,7 +156,8 @@ func equip(id:String)->bool:
  equipment[slot]=id;state_changed.emit();return true
 func add_item(id:String,count:=1):inventory[id]=inventory.get(id,0)+count;track("collect",id,count);state_changed.emit()
 func accept_quest(id:String):
- if id in QUESTS and id not in quests:quests[id]={"status":"Active","progress":0};quest_updated.emit(id)
+ if id in QUESTS and id not in quests:quests[id]={"status":"Active","progress":0};if tracked_quest=="":tracked_quest=id;quest_updated.emit(id)
+func track_quest(id:String):if id in quests and quests[id].status!="Completed":tracked_quest=id;state_changed.emit()
 func track(type:String,target:String,amount:=1):
  for id in quests:
   var q=QUESTS.get(id,{});var s=quests[id]
@@ -157,6 +168,9 @@ func turn_in(id:String)->bool:
  crowns+=int(reward.get("crowns",0))
  if reward.has("item"):add_item(reward.item)
  quests[id].status="Completed"
+ if id=="first_road" and not quests.has("mine_silence"):
+  quests["mine_silence"]={"status":"Active","progress":0};tracked_quest="mine_silence"
+ elif tracked_quest==id:tracked_quest=""
  quest_updated.emit(id)
  return true
 func gain_rewards(exp:int,money:int)->Array[String]:
@@ -164,7 +178,17 @@ func gain_rewards(exp:int,money:int)->Array[String]:
  while experience>=level*60:
   experience-=level*60;level+=1;base_stats.max_hp+=12;base_stats.max_mp+=4;base_stats.attack+=3;base_stats.defense+=2;base_stats.magic+=2;base_stats.resistance+=2;base_stats.speed+=1;hp=stat("max_hp");mp=stat("max_mp");notes.append("Ari reached level %d!"%level)
  state_changed.emit();return notes
-func serialize()->Dictionary:return {"version":5,"hero":HERO_NAME,"crowns":crowns,"inventory":inventory,"equipment":equipment,"location":current_location,"position":[player_position.x,player_position.y],"play_seconds":play_seconds,"flags":flags,"quests":quests,"opened_treasures":opened_treasures,"defeated_bosses":defeated_bosses,"world_events":world_events,"level":level,"experience":experience,"hp":hp,"mp":mp,"base_stats":base_stats,"party":party,"party_state":party_state,"bestiary":bestiary,"discovered_locations":discovered_locations,"fast_travel":fast_travel,"puzzle_states":puzzle_states,"guild_reputation":guild_reputation,"job_state":job_state,"unlocked_jobs":unlocked_jobs,"relationships":relationships,"relationship_events":relationship_events,"vehicles":vehicles,"ship":ship,"known_planets":known_planets,"story_branches":story_branches,"lattice_points":lattice_points,"lattice_active":lattice_active,"generated_items":generated_items,"chest_rolls":chest_rolls}
+func auto_equip()->Array[String]:
+ var changes:Array[String]=[]
+ for id in inventory:
+  if int(inventory[id])<1:continue
+  var data=item_data(id);var slot=str(data.get("slot",data.get("type","")));if slot=="Armor":slot="Body";if slot=="Accessory":slot="Accessory1"
+  if slot not in equipment:continue
+  var current=item_data(equipment[slot]);var score=int(data.get("rating",0));var old_score=int(current.get("rating",0))
+  for key in ["attack","defense","magic","resistance","speed","max_hp","max_mp"]:score+=int(data.get("stats",{}).get(key,data.get(key,0)))*3;old_score+=int(current.get("stats",{}).get(key,current.get(key,0)))*3
+  if score>old_score:equipment[slot]=id;changes.append(str(data.get("name",id)))
+ state_changed.emit();return changes
+func serialize()->Dictionary:return {"version":6,"hero":HERO_NAME,"crowns":crowns,"inventory":inventory,"equipment":equipment,"location":current_location,"position":[player_position.x,player_position.y],"play_seconds":play_seconds,"flags":flags,"quests":quests,"opened_treasures":opened_treasures,"defeated_bosses":defeated_bosses,"world_events":world_events,"level":level,"experience":experience,"hp":hp,"mp":mp,"base_stats":base_stats,"party":party,"party_state":party_state,"bestiary":bestiary,"discovered_locations":discovered_locations,"fast_travel":fast_travel,"puzzle_states":puzzle_states,"guild_reputation":guild_reputation,"job_state":job_state,"unlocked_jobs":unlocked_jobs,"relationships":relationships,"relationship_events":relationship_events,"vehicles":vehicles,"ship":ship,"known_planets":known_planets,"story_branches":story_branches,"lattice_points":lattice_points,"lattice_active":lattice_active,"generated_items":generated_items,"chest_rolls":chest_rolls,"tracked_quest":tracked_quest,"minigame_best":minigame_best}
 func restore(d:Dictionary):
  crowns=int(d.get("crowns",140))
  inventory=d.get("inventory",{})
@@ -199,5 +223,6 @@ func restore(d:Dictionary):
  guild_reputation=int(d.get("guild_reputation",0))
  job_state=d.get("job_state",job_state);unlocked_jobs.clear();for saved_job_id in d.get("unlocked_jobs",["pathguard","flame_scholar","way_mender","reed_ranger","lantern_rogue","stone_monk","tide_engineer","star_priest"]):unlocked_jobs.append(str(saved_job_id));relationships=d.get("relationships",relationships);relationship_events.clear();for relationship_event_id in d.get("relationship_events",[]):relationship_events.append(str(relationship_event_id));vehicles=d.get("vehicles",vehicles);ship=d.get("ship",ship);known_planets.clear();for planet_id in d.get("known_planets",[]):known_planets.append(str(planet_id));story_branches=d.get("story_branches",{})
  lattice_points=d.get("lattice_points",{"ari":3});lattice_active=d.get("lattice_active",{"ari":["lattice_000"]});generated_items=d.get("generated_items",{});chest_rolls=d.get("chest_rolls",{});var migrated={"Weapon":equipment.get("Weapon",""),"Head":equipment.get("Head",""),"Body":equipment.get("Body",equipment.get("Armor","")),"Hands":equipment.get("Hands",""),"Feet":equipment.get("Feet",""),"Accessory1":equipment.get("Accessory1",equipment.get("Accessory","")),"Accessory2":equipment.get("Accessory2","")};equipment=migrated
+ tracked_quest=str(d.get("tracked_quest",""));minigame_best=int(d.get("minigame_best",0))
  state_changed.emit()
 
