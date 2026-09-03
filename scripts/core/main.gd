@@ -48,6 +48,7 @@ func _interaction(kind:String,payload:Dictionary):
  elif kind=="door": current_building=payload; _transition_to_interior()
  elif kind=="shop": ui.shop(payload.id,payload.name)
  elif kind=="inn": ui.inn()
+ elif kind=="minigame":ui.lantern_game()
  elif kind=="save": _save_prompt()
  elif kind=="exit": _enter_adventure("region")
  elif kind=="return": _enter_town_from_region()
