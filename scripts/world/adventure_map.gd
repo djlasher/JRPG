@@ -46,7 +46,7 @@ func _ready():
  _content()
  _add_minimap()
 func _add_minimap():
- var layer=CanvasLayer.new();layer.layer=5;add_child(layer);var map=MapWidget.new();map.position=Vector2(478,10);map.size=Vector2(152,96);map.setup(map_id,player,size,true);layer.add_child(map)
+ var layer=CanvasLayer.new();layer.layer=5;add_child(layer);var map=MapWidget.new();map.position=Vector2(478,10);map.size=Vector2(152,96);map.setup(map_id,player,size,true);layer.add_child(map);var guide=QuestGuide.new();guide.setup(map_id,player,interactables,size);layer.add_child(guide)
 func _walls():
  for r in [Rect2(0,0,size.x,30),Rect2(0,0,30,size.y),Rect2(size.x-30,0,30,size.y),Rect2(0,size.y-30,size.x/2-60,30),Rect2(size.x/2+60,size.y-30,size.x/2-60,30)]:_wall(r)
  if map_id=="region":for r in [Rect2(0,600,420,80),Rect2(2050,0,120,650),Rect2(1180,700,240,620),Rect2(1550,1550,700,70)]:_wall(r)
@@ -119,6 +119,7 @@ func _draw():
  elif map_id=="space":_draw_space()
  elif map_id in ["verdant_planet","cinder_planet","aether_moon","hell_city"]:_draw_other_world()
  for it in interactables:
+  if _is_tracked_goal(it):draw_circle(it.position,42,Color("ffe068"),false,4);draw_circle(it.position,32,Color("fff1a0"),false,2)
   if it.kind=="battle":_draw_enemy(it.position,it.payload.enemy)
   elif it.kind=="treasure":draw_rect(Rect2(it.position-Vector2(18,13),Vector2(36,26)),Color("6f3f22"));draw_rect(Rect2(it.position-Vector2(16,11),Vector2(32,8)),Color("d6a13f"));draw_rect(Rect2(it.position-Vector2(3,3),Vector2(6,10)),Color("f4d36b"))
   elif it.kind=="save":draw_circle(it.position,18,Color("82d9d0"));draw_circle(it.position,9,Color.WHITE);draw_string(ThemeDB.fallback_font,it.position+Vector2(-35,34),"WAYLIGHT",0,90,12,Color.WHITE)
@@ -136,6 +137,9 @@ func _draw_enemy(p:Vector2,id:String):
  elif id in ["roadshade","hollow_knight","stonewarden"]:draw_rect(Rect2(p-Vector2(13,19),Vector2(26,38)),c);draw_circle(p+Vector2(0,-22),10,c.lightened(.15))
  else:draw_circle(p,19,c);draw_circle(p+Vector2(-8,-12),10,c.lightened(.15));draw_circle(p+Vector2(8,-12),10,c.lightened(.15))
  draw_string(ThemeDB.fallback_font,p+Vector2(-55,38),e.name,0,120,12,Color.WHITE)
+func _is_tracked_goal(it:Dictionary)->bool:
+ var q=GameState.QUESTS.get(GameState.tracked_quest,{});if q.is_empty():return false
+ return (q.type=="defeat_specific" and it.kind=="battle" and it.payload.get("enemy","")==q.target) or it.payload.get("id","")==q.target or it.payload.get("target","")==q.target or (q.type=="visit" and it.kind=="travel" and it.payload.get("id","")==q.target)
 func _draw_settlement():
  var water_color=Color("438eaa");if map_id=="brackenford":draw_rect(Rect2(0,520,size.x,95),water_color);draw_rect(Rect2(430,500,240,135),Color("b9955f"))
  else:draw_rect(Rect2(size.x-170,0,170,size.y),water_color);draw_circle(Vector2(size.x-170,420),120,water_color)
