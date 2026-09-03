@@ -12,8 +12,15 @@ var page:=0
 var mode:=""
 var buttons:VBoxContainer
 var owner_main:Node
+var minigame_meter:ProgressBar
+var minigame_direction:=1.0
 
 func _ready(): process_mode=Node.PROCESS_MODE_ALWAYS
+func _process(delta):
+ if mode=="minigame" and minigame_meter:
+  minigame_meter.value+=minigame_direction*delta*75.0
+  if minigame_meter.value>=100:minigame_meter.value=100;minigame_direction=-1
+  elif minigame_meter.value<=0:minigame_meter.value=0;minigame_direction=1
 func clear(): if panel: panel.queue_free(); panel=null; mode=""
 func _base(caption:String,size:=Vector2(560,150),pos:=Vector2(40,190)):
  clear(); panel=PanelContainer.new(); panel.position=pos; panel.size=size; var style=StyleBoxFlat.new(); style.bg_color=Color("17223bdd"); style.border_color=Color("d5af63"); style.set_border_width_all(3); style.corner_radius_top_left=8; style.corner_radius_top_right=8; style.corner_radius_bottom_left=8; style.corner_radius_bottom_right=8; panel.add_theme_stylebox_override("panel",style); add_child(panel)
@@ -23,7 +30,7 @@ func dialogue(name:String,texts:Array,actor=null):
 func feedback(text:String): dialogue("",[text])
 func shop(id:String,name:String):
  _base(name,Vector2(560,300),Vector2(40,30)); mode="shop"; body.text="Choose an item.  Crowns: %d"%GameState.crowns
- var stock=["sunleaf_tonic","clearwater_salt","lantern_charm"] if id=="general" else (["marsh_blade","quarry_mail","wind_knot","sunleaf_tonic"] if "Brackenford" in name or "Mosswick" in name else ["reed_sword","ash_staff","wayfarer_vest"])
+ var stock=["field_bread","sunleaf_tonic","clearwater_salt","copper_charm"] if id=="general" else (["marsh_blade","quarry_mail","wind_knot","sunleaf_tonic"] if "Brackenford" in name or "Mosswick" in name else ["reed_sword","ash_staff","wayfarer_vest","reed_cap","padded_gloves","road_boots"])
  for item_id in stock:
   var d=GameState.ITEMS[item_id]; var b=Button.new(); b.text="%s — %d crowns\n%s"%[d.name,d.price,d.description]; b.pressed.connect(_buy.bind(item_id,int(d.price))); buttons.add_child(b)
  var close=Button.new(); close.text="Leave shop"; close.pressed.connect(_close); buttons.add_child(close); buttons.get_child(0).grab_focus()
@@ -36,11 +43,20 @@ func inn():
 func _rest():
  if GameState.crowns>=24: GameState.crowns-=24;GameState.hp=GameState.stat("max_hp");GameState.mp=GameState.stat("max_mp");body.text="The lamps dim. You wake fully restored beneath a quilt of blue herons.";for c in buttons.get_children():c.queue_free()
  else: body.text="Maeve smiles gently. 'Come back when the road has been kinder.'"
+func lantern_game():
+ _base("Waylight Tune-Up",Vector2(520,250),Vector2(60,55));mode="minigame";body.text="Stop the wandering spark inside the gold center band. Better timing earns a better guild tip."
+ minigame_meter=ProgressBar.new();minigame_meter.min_value=0;minigame_meter.max_value=100;minigame_meter.value=5;minigame_meter.show_percentage=false;minigame_meter.custom_minimum_size=Vector2(470,34);buttons.add_child(minigame_meter);var stop=Button.new();stop.text="STOP THE SPARK";stop.pressed.connect(_stop_lantern_game);buttons.add_child(stop);var leave=Button.new();leave.text="Leave";leave.pressed.connect(_close);buttons.add_child(leave);stop.grab_focus()
+func _stop_lantern_game():
+ var accuracy=maxi(0,100-int(abs(minigame_meter.value-50)*2));GameState.minigame_best=maxi(GameState.minigame_best,accuracy);var reward=25 if accuracy>=80 else (12 if accuracy>=45 else 4);GameState.crowns+=reward
+ if accuracy>=80:GameState.add_item("sunleaf_tonic")
+ body.text="Accuracy: %d%%\nThe guild pays %d crowns.%s"%[accuracy,reward," A Sunleaf Tonic bonus!" if accuracy>=80 else ""]
+ for child in buttons.get_children():child.queue_free()
+ var replay=Button.new();replay.text="Play again";replay.pressed.connect(lantern_game);buttons.add_child(replay);var leave=Button.new();leave.text="Leave";leave.pressed.connect(_close);buttons.add_child(leave);replay.grab_focus();mode="menu";minigame_meter=null
 func pause_menu():
  _base("Travel Journal",Vector2(560,340),Vector2(40,10));mode="pause";get_tree().paused=true;var mins=int(GameState.play_seconds)/60;body.text="[b]%s — Level %d[/b]  HP %d/%d  MP %d/%d\nLocation: %s  Crowns: %d  Journey: %02d:%02d\n%s"%[GameState.HERO_NAME,GameState.level,GameState.hp,GameState.stat("max_hp"),GameState.mp,GameState.stat("max_mp"),GameState.current_location,GameState.crowns,mins,int(GameState.play_seconds)%60,_inventory_text()]
- for option in ["Area Map","Party","Jobs","Advancement Lattice","Skills & Magic","Relationships","Bestiary","Fast Travel","Quest Log","Equipment","Return to game","Quit to title"]:
-  var b=Button.new(); b.text=option; buttons.add_child(b)
- buttons.get_child(0).pressed.connect(area_map);buttons.get_child(1).pressed.connect(party_menu);buttons.get_child(2).pressed.connect(job_menu);buttons.get_child(3).pressed.connect(advancement_menu);buttons.get_child(4).pressed.connect(magic_menu);buttons.get_child(5).pressed.connect(relationship_menu);buttons.get_child(6).pressed.connect(bestiary_menu);buttons.get_child(7).pressed.connect(fast_travel_menu);buttons.get_child(8).pressed.connect(quest_log);buttons.get_child(9).pressed.connect(equipment_menu);buttons.get_child(10).pressed.connect(_close);buttons.get_child(11).pressed.connect(func():get_tree().paused=false;clear();quit_to_title.emit());buttons.get_child(0).grab_focus()
+ for option in ["Area Map","Party","Jobs","Advancement Lattice","Skills & Magic","Relationships","Bestiary","Fast Travel","Quest Log","Inventory","Equipment","Return to game","Quit to title"]:
+  var b=Button.new();b.text=option;b.custom_minimum_size.y=20;b.add_theme_font_size_override("font_size",12);buttons.add_child(b)
+ buttons.get_child(0).pressed.connect(area_map);buttons.get_child(1).pressed.connect(party_menu);buttons.get_child(2).pressed.connect(job_menu);buttons.get_child(3).pressed.connect(advancement_menu);buttons.get_child(4).pressed.connect(magic_menu);buttons.get_child(5).pressed.connect(relationship_menu);buttons.get_child(6).pressed.connect(bestiary_menu);buttons.get_child(7).pressed.connect(fast_travel_menu);buttons.get_child(8).pressed.connect(quest_log);buttons.get_child(9).pressed.connect(inventory_menu);buttons.get_child(10).pressed.connect(equipment_menu);buttons.get_child(11).pressed.connect(_close);buttons.get_child(12).pressed.connect(func():get_tree().paused=false;clear();quit_to_title.emit());buttons.get_child(0).grab_focus()
 func advancement_menu():
  _base("Soul-Circuit Lattice",Vector2(590,350),Vector2(25,5));mode="pause";var nodes=ProgressionDatabase.build_grid();body.text="Resonance Marks: %d   Activated: %d/120\nRunic paths carry memory like neon through cathedral glass."%[GameState.lattice_points.get("ari",0),GameState.lattice_active.get("ari",[]).size()]
  var shown=0
@@ -97,13 +113,20 @@ func fast_travel_menu():
  var back=Button.new();back.text="Back";back.pressed.connect(pause_menu);buttons.add_child(back);buttons.get_child(0).grab_focus()
 func _request_travel(id:String):travel_requested.emit(id)
 func quest_log():
- _base("Quest Log",Vector2(560,340),Vector2(40,10));mode="pause";var rows=[]
+ _base("Quest Log",Vector2(560,340),Vector2(40,10));mode="pause";var rows=[];var shown=0
  for id in GameState.quests:
-  var q=GameState.QUESTS[id];var s=GameState.quests[id];rows.append("[b][%s] %s — %s[/b]\n%s (%d/%d)\nReward: %d crowns"%[q.category,q.name,s.status,q.description,s.progress,q.count,q.reward.get("crowns",0)])
- body.text="No quests accepted yet. Visit a Wayfarers' Guild board." if rows.is_empty() else "\n\n".join(rows)
+  var q=GameState.QUESTS[id];var s=GameState.quests[id];rows.append("%s[b][%s] %s — %s[/b] (%d/%d)"%["▶ " if GameState.tracked_quest==id else "",q.category,q.name,s.status,s.progress,q.count]);if s.status!="Completed" and shown<7:var track_button=Button.new();track_button.text="Track: "+q.name;track_button.pressed.connect(_track_quest.bind(id));buttons.add_child(track_button);shown+=1
+ body.text="No quests accepted yet. Visit a Wayfarers' Guild board." if rows.is_empty() else "\n".join(rows)
  var back=Button.new();back.text="Back";back.pressed.connect(pause_menu);buttons.add_child(back);back.grab_focus()
+func _track_quest(id:String):GameState.track_quest(id);quest_log()
+func inventory_menu():
+ _base("Inventory",Vector2(560,340),Vector2(40,10));mode="pause";var rows=[]
+ for id in GameState.inventory:
+  var data=GameState.item_data(id);var rating=int(data.get("rating",0));rows.append("[b]%s ×%d[/b]%s\n%s"%[data.get("name",id),GameState.inventory[id]," — Gear %d"%rating if rating>0 else "",data.get("description","")])
+ body.text="Your pack is empty." if rows.is_empty() else "\n\n".join(rows);var back=Button.new();back.text="Back";back.pressed.connect(pause_menu);buttons.add_child(back);back.grab_focus()
 func equipment_menu():
  _base("Equipment Comparison",Vector2(590,350),Vector2(25,5));mode="pause";body.text="Attack %d  Defense %d  Magic %d  Speed %d\nSlots: Weapon · Head · Body · Hands · Feet · Accessory 1 · Accessory 2"%[GameState.stat("attack"),GameState.stat("defense"),GameState.stat("magic"),GameState.stat("speed")]
+ var auto_button=Button.new();auto_button.text="AUTO-EQUIP BEST GEAR";auto_button.pressed.connect(_auto_equip);buttons.add_child(auto_button)
  for id in GameState.inventory:
   var data=GameState.item_data(id);var slot=str(data.get("slot",data.get("type","")));if slot=="Armor":slot="Body";if slot=="Accessory":slot="Accessory1"
   if slot in GameState.equipment:
@@ -111,9 +134,10 @@ func equipment_menu():
  var back=Button.new();back.text="Back";back.pressed.connect(pause_menu);buttons.add_child(back);buttons.get_child(0).grab_focus()
 func _equip_name(slot:String):var id=GameState.equipment.get(slot,"");return "None" if id=="" else GameState.item_data(id).name
 func _equip(id:String):GameState.equip_instance(id);equipment_menu()
+func _auto_equip():var changes=GameState.auto_equip();equipment_menu();body.text="Best available gear equipped: "+(", ".join(changes) if not changes.is_empty() else "current loadout already wins.")
 func guild_board(town:String):
  _base("Wayfarers' Guild Board",Vector2(560,340),Vector2(40,10));mode="menu";body.text="Select a posted job. Active jobs can be turned in when ready."
- var ids=["first_road","cave_wings","lost_satchel"] if town=="larkspur" else (["thorn_problem","bandit_ledgers","missing_scout","mine_silence"] if town=="brackenford" else ["moon_moss","ruin_lights","lake_beast","medicine_run","old_arch"])
+ var ids=["first_road","slime_samples","broken_wheel","first_camp","singing_stone_job","cave_wings","bat_wings","lost_satchel"] if town=="larkspur" else (["first_road","thorn_problem","thorn_jelly","bandit_ledgers","missing_scout","mine_silence"] if town=="brackenford" else ["moon_moss","ruin_lights","lake_beast","medicine_run","old_arch"])
  for id in ids:
   var q=GameState.QUESTS[id];var b=Button.new();b.text="%s — %s"%[q.name,GameState.quests.get(id,{"status":"Available"}).status];b.pressed.connect(_quest_action.bind(id,town));buttons.add_child(b)
  var close=Button.new();close.text="Leave board";close.pressed.connect(_close);buttons.add_child(close);buttons.get_child(0).grab_focus()
