@@ -32,7 +32,7 @@ const NPC_DATA=[
 ]
 
 func _ready():
- queue_redraw(); _build_collisions(); _spawn_player(); _spawn_npcs(); _build_interactables()
+ queue_redraw();_build_collisions();_spawn_player();_spawn_npcs();_build_interactables();var layer=CanvasLayer.new();layer.layer=5;add_child(layer);var guide=QuestGuide.new();guide.setup("town",player,interactables,SIZE);layer.add_child(guide)
 func _spawn_player(): player=Player.new(); add_child(player); player.global_position=GameState.player_position
 func _spawn_npcs():
  for i in NPC_DATA.size(): var n=NPCActor.new(); n.setup(NPC_DATA[i]); add_child(n); n.global_position=Vector2(560+i*70,560+(i%3)*65); npcs.append(n)
@@ -45,7 +45,7 @@ func _wall(rect:Rect2):
 func _build_interactables():
  for b in BUILDINGS: interactables.append({"position":b.door,"kind":"door","payload":{"id":b.id,"name":b.name}})
  interactables.append({"position":Vector2(750,520),"kind":"landmark","payload":{"name":"Beacon Fountain","lines":["Clear water circles an old brass lantern. Its flame never seems to go out."]}})
- interactables.append({"position":Vector2(940,620),"kind":"save","payload":{}}); interactables.append({"position":Vector2(760,1130),"kind":"exit","payload":{}})
+ interactables.append({"position":Vector2(835,540),"kind":"minigame","payload":{}});interactables.append({"position":Vector2(940,620),"kind":"save","payload":{}}); interactables.append({"position":Vector2(760,1130),"kind":"exit","payload":{}})
 func try_interact():
  var probe=player.global_position+player.facing*28; var best=999.0; var chosen={}
  for n in npcs:
@@ -59,6 +59,7 @@ func _draw():
  for b in BUILDINGS: _draw_building(b)
  for p in [Vector2(85,390),Vector2(145,440),Vector2(1450,920),Vector2(980,1080),Vector2(1020,600)]: _draw_tree(p)
  draw_circle(Vector2(750,540),80,Color("d7d4bd")); draw_circle(Vector2(750,540),63,Color("4e9db3")); draw_circle(Vector2(750,540),30,Color("8a8d78")); draw_rect(Rect2(740,485,20,70),Color("c7b663"))
+ draw_string(ThemeDB.fallback_font,Vector2(795,575),"WAYLIGHT GAME",0,130,12,Color("fff0a8"))
  draw_circle(Vector2(940,620),18,Color("8ee7e1")); draw_circle(Vector2(940,620),10,Color("e7ffff")); draw_string(ThemeDB.fallback_font,Vector2(900,655),"WAYLIGHT",HORIZONTAL_ALIGNMENT_LEFT,100,12,Color("ecffff"))
  draw_rect(Rect2(620,1125,300,75),Color("ad8c58")); draw_string(ThemeDB.fallback_font,Vector2(695,1170),"SOUTH ROAD",HORIZONTAL_ALIGNMENT_LEFT,200,18,Color("493b30"))
 func _draw_building(b):
