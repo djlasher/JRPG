@@ -24,4 +24,7 @@ func _draw():
  if appearance_mode!="hero":draw_texture_rect_region(PixelAssets.ATLAS,Rect2(-30,-25,60,50),PixelAssets.vehicle_region(appearance_mode));return
  _draw_oval(Vector2(0,15),Vector2(10,4),Color(0,0,0,0.25));var bob=1.0 if velocity.length()>1 and int(walk_time)%2==0 else 0.0;draw_texture_rect_region(PixelAssets.ATLAS,Rect2(-17,-27+bob,34,48),PixelAssets.hero_region(facing))
 func _draw_oval(center:Vector2,radii:Vector2,color:Color):
- var pts=PackedVector2Array(); for i in 20: pts.append(center+Vector2(cos(i*TAU/20.0)*radii.x,sin(i*TAU/20.0)*radii.y)); draw_colored_polygon(pts,color)
+ var pts=PackedVector2Array()
+ for i in 20:pts.append(center+Vector2(cos(i*TAU/20.0)*radii.x,sin(i*TAU/20.0)*radii.y))
+ draw_colored_polygon(pts,color)
+
