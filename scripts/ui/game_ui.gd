@@ -132,10 +132,7 @@ func equipment_menu():
   var data=GameState.item_data(id);var slot=str(data.get("slot",data.get("type","")));if slot=="Armor":slot="Body";if slot=="Accessory":slot="Accessory1"
   if slot in GameState.equipment:
    var current=GameState.item_data(GameState.equipment[slot])
-   var delta=[]
-   for stat_key in data.get("stats",{}):
-    var change=int(data.stats[stat_key])-int(current.get("stats",{}).get(stat_key,current.get(stat_key,0)))
-    delta.append("%s %+d"%[stat_key.capitalize(),change])
+   var delta=_equipment_delta(data,current)
    var b=Button.new()
    b.text="%s — %s (Gear %d)%s\n%s"%[slot,data.name,data.get("rating",0)," [EQUIPPED]" if GameState.equipment[slot]==id else "",", ".join(delta)]
    b.autowrap_mode=TextServer.AUTOWRAP_WORD_SMART
@@ -144,6 +141,12 @@ func equipment_menu():
    b.pressed.connect(_equip.bind(id))
    buttons.add_child(b)
  var back=Button.new();back.text="Back";back.pressed.connect(pause_menu);buttons.add_child(back);buttons.get_child(0).grab_focus()
+func _equipment_delta(data:Dictionary,current:Dictionary)->Array:
+ var changes=[]
+ for stat_key in data.get("stats",{}):
+  var difference=int(data.stats[stat_key])-int(current.get("stats",{}).get(stat_key,current.get(stat_key,0)))
+  changes.append("%s %+d"%[stat_key.capitalize(),difference])
+ return changes
 func _equip_name(slot:String):var id=GameState.equipment.get(slot,"");return "None" if id=="" else GameState.item_data(id).name
 func _equip(id:String):GameState.equip_instance(id);equipment_menu()
 func _auto_equip():var changes=GameState.auto_equip();equipment_menu();body.text="Best available gear equipped: "+(", ".join(changes) if not changes.is_empty() else "current loadout already wins.")
