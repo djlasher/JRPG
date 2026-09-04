@@ -24,7 +24,7 @@ func _process(delta):
 func clear(): if panel: panel.queue_free(); panel=null; mode=""
 func _base(caption:String,size:=Vector2(560,150),pos:=Vector2(40,190)):
  clear(); panel=PanelContainer.new(); panel.position=pos; panel.size=size; var style=StyleBoxFlat.new(); style.bg_color=Color("17223bdd"); style.border_color=Color("d5af63"); style.set_border_width_all(3); style.corner_radius_top_left=8; style.corner_radius_top_right=8; style.corner_radius_bottom_left=8; style.corner_radius_bottom_right=8; panel.add_theme_stylebox_override("panel",style); add_child(panel)
- var v=VBoxContainer.new(); v.add_theme_constant_override("separation",8); panel.add_child(v); title=Label.new(); title.text=caption; title.add_theme_color_override("font_color",Color("f0c96b")); title.add_theme_font_size_override("font_size",18); v.add_child(title); body=RichTextLabel.new(); body.bbcode_enabled=true; body.fit_content=true; body.custom_minimum_size=Vector2(size.x-30,60); v.add_child(body); buttons=VBoxContainer.new(); v.add_child(buttons)
+ var scroll=ScrollContainer.new();scroll.follow_focus=true;scroll.horizontal_scroll_mode=ScrollContainer.SCROLL_MODE_DISABLED;panel.add_child(scroll);var v=VBoxContainer.new();v.size_flags_horizontal=Control.SIZE_EXPAND_FILL;v.add_theme_constant_override("separation",8);scroll.add_child(v); title=Label.new(); title.text=caption; title.add_theme_color_override("font_color",Color("f0c96b")); title.add_theme_font_size_override("font_size",18); v.add_child(title); body=RichTextLabel.new(); body.bbcode_enabled=true; body.fit_content=true; body.custom_minimum_size=Vector2(0,60); v.add_child(body); buttons=VBoxContainer.new(); v.add_child(buttons)
 func dialogue(name:String,texts:Array,actor=null):
  _base(name); pages.clear(); for t in texts: pages.append(str(t)); page=0; body.text=pages[0]; mode="dialogue"; if actor: actor.talking=true; panel.set_meta("actor",actor)
 func feedback(text:String): dialogue("",[text])
@@ -53,10 +53,11 @@ func _stop_lantern_game():
  for child in buttons.get_children():child.queue_free()
  var replay=Button.new();replay.text="Play again";replay.pressed.connect(lantern_game);buttons.add_child(replay);var leave=Button.new();leave.text="Leave";leave.pressed.connect(_close);buttons.add_child(leave);replay.grab_focus();mode="menu";minigame_meter=null
 func pause_menu():
- _base("Travel Journal",Vector2(560,340),Vector2(40,10));mode="pause";get_tree().paused=true;var mins=int(GameState.play_seconds)/60;body.text="[b]%s — Level %d[/b]  HP %d/%d  MP %d/%d\nLocation: %s  Crowns: %d  Journey: %02d:%02d\n%s"%[GameState.HERO_NAME,GameState.level,GameState.hp,GameState.stat("max_hp"),GameState.mp,GameState.stat("max_mp"),GameState.current_location,GameState.crowns,mins,int(GameState.play_seconds)%60,_inventory_text()]
+ _base("Travel Journal",Vector2(560,340),Vector2(40,10));mode="pause";get_tree().paused=true;var mins=int(GameState.play_seconds)/60;body.text="[b]%s — Level %d[/b]  HP %d/%d  MP %d/%d\nLocation: %s  Crowns: %d  Journey: %02d:%02d\n%s"%[GameState.HERO_NAME,GameState.level,GameState.hp,GameState.stat("max_hp"),GameState.mp,GameState.stat("max_mp"),GameState.current_location,GameState.crowns,mins,int(GameState.play_seconds)%60,"A: select   B: back   Start: return to game"]
  for option in ["Area Map","Party","Jobs","Advancement Lattice","Skills & Magic","Relationships","Bestiary","Fast Travel","Quest Log","Inventory","Equipment","Return to game","Quit to title"]:
   var b=Button.new();b.text=option;b.custom_minimum_size.y=20;b.add_theme_font_size_override("font_size",12);buttons.add_child(b)
  buttons.get_child(0).pressed.connect(area_map);buttons.get_child(1).pressed.connect(party_menu);buttons.get_child(2).pressed.connect(job_menu);buttons.get_child(3).pressed.connect(advancement_menu);buttons.get_child(4).pressed.connect(magic_menu);buttons.get_child(5).pressed.connect(relationship_menu);buttons.get_child(6).pressed.connect(bestiary_menu);buttons.get_child(7).pressed.connect(fast_travel_menu);buttons.get_child(8).pressed.connect(quest_log);buttons.get_child(9).pressed.connect(inventory_menu);buttons.get_child(10).pressed.connect(equipment_menu);buttons.get_child(11).pressed.connect(_close);buttons.get_child(12).pressed.connect(func():get_tree().paused=false;clear();quit_to_title.emit());buttons.get_child(0).grab_focus()
+ buttons.move_child(buttons.get_child(10),0);buttons.get_child(0).text="Gear / Equipment";buttons.move_child(buttons.get_child(10),1);buttons.get_child(0).grab_focus()
 func advancement_menu():
  _base("Soul-Circuit Lattice",Vector2(590,350),Vector2(25,5));mode="pause";var nodes=ProgressionDatabase.build_grid();body.text="Resonance Marks: %d   Activated: %d/120\nRunic paths carry memory like neon through cathedral glass."%[GameState.lattice_points.get("ari",0),GameState.lattice_active.get("ari",[]).size()]
  var shown=0
@@ -69,7 +70,7 @@ func _activate_node(id:String):GameState.activate_lattice("ari",id);advancement_
 func magic_menu():
  _base("Skills & Encoded Magic",Vector2(570,350),Vector2(35,5));mode="pause";var rows=[]
  for id in GameState.job_state.ari.learned:
-  if ProgressionDatabase.SPELLS.has(id):var s=ProgressionDatabase.SPELLS[id];rows.append("[b]%s — %s[/b]  %d MP\n%s; %s. %s"%[s.name,s.school,s.cost,s.target,s.effect,s.get("description","Encoded spell pattern")]);var spell_button=Button.new();spell_button.text="  %s — %s"%[s.name,s.school];spell_button.icon=VisualAssets.icon_for_spell(id);spell_button.icon_max_width=40;buttons.add_child(spell_button)
+  if ProgressionDatabase.SPELLS.has(id):var s=ProgressionDatabase.SPELLS[id];rows.append("[b]%s — %s[/b]  %d MP\n%s; %s. %s"%[s.name,s.school,s.cost,s.target,s.effect,s.get("description","Encoded spell pattern")]);var spell_button=Button.new();spell_button.text="  %s — %s"%[s.name,s.school];spell_button.icon=VisualAssets.icon_for_spell(id);spell_button.add_theme_constant_override("icon_max_width",40);buttons.add_child(spell_button)
   else:rows.append("[b]%s[/b] — Job/weapon technique"%str(id).capitalize())
  body.text="\n\n".join(rows);var back=Button.new();back.text="Back";back.pressed.connect(pause_menu);buttons.add_child(back);back.grab_focus()
 func _inventory_text():
@@ -130,7 +131,18 @@ func equipment_menu():
  for id in GameState.inventory:
   var data=GameState.item_data(id);var slot=str(data.get("slot",data.get("type","")));if slot=="Armor":slot="Body";if slot=="Accessory":slot="Accessory1"
   if slot in GameState.equipment:
-   var current=GameState.item_data(GameState.equipment[slot]);var rarity=ProgressionDatabase.RARITIES.get(data.get("rarity","common"),ProgressionDatabase.RARITIES.common);var delta=[];for stat_key in data.get("stats",{}):var change=int(data.stats[stat_key])-int(current.get("stats",{}).get(stat_key,current.get(stat_key,0)));delta.append("%s %+d"%[stat_key.capitalize(),change]);var b=Button.new();b.text="[%s] %s (Rating %d)\n%s: %s  →  %s | %s"%[rarity.name,data.name,data.get("rating",0),slot,current.get("name","Empty"),data.name,", ".join(delta)];b.icon=VisualAssets.icon_for_item(data);b.icon_max_width=44;b.pressed.connect(_equip.bind(id));buttons.add_child(b)
+   var current=GameState.item_data(GameState.equipment[slot])
+   var delta=[]
+   for stat_key in data.get("stats",{}):
+    var change=int(data.stats[stat_key])-int(current.get("stats",{}).get(stat_key,current.get(stat_key,0)))
+    delta.append("%s %+d"%[stat_key.capitalize(),change])
+   var b=Button.new()
+   b.text="%s — %s (Gear %d)%s\n%s"%[slot,data.name,data.get("rating",0)," [EQUIPPED]" if GameState.equipment[slot]==id else "",", ".join(delta)]
+   b.autowrap_mode=TextServer.AUTOWRAP_WORD_SMART
+   b.icon=VisualAssets.icon_for_item(data)
+   b.add_theme_constant_override("icon_max_width",32)
+   b.pressed.connect(_equip.bind(id))
+   buttons.add_child(b)
  var back=Button.new();back.text="Back";back.pressed.connect(pause_menu);buttons.add_child(back);buttons.get_child(0).grab_focus()
 func _equip_name(slot:String):var id=GameState.equipment.get(slot,"");return "None" if id=="" else GameState.item_data(id).name
 func _equip(id:String):GameState.equip_instance(id);equipment_menu()
