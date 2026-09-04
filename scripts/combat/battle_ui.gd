@@ -26,7 +26,7 @@ func _button(label:String,callback:Callable,icon:Texture2D=null):
  var button=Button.new();button.text=label;button.pressed.connect(callback)
  if icon:
   button.icon=icon
-  button.icon_max_width=28
+  button.add_theme_constant_override("icon_max_width",28)
  commands.add_child(button)
 func _clear_commands():for child in commands.get_children():child.queue_free()
 func _show_commands():
